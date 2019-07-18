@@ -64,7 +64,7 @@
     Dev.prototype.command['she-for'] = function (VRElement, value, name) { //处理循环数据
         if(value !== null && typeof value === 'object'){
             const parent = VRElement.element.parentNode;
-            const frag = document.createDocumentFragment();
+            const fragment = document.createDocumentFragment();
             for(const i in value){
                 const element = VRElement.element.cloneNode(true);
                 const forRrenderer = function(elements, command){
@@ -90,9 +90,9 @@
                 if(name !== undefined){
                     VRElement.element.setAttribute(name, JSON.stringify(value));
                 }
-                frag.appendChild( element );
+                fragment.appendChild( element );
             }
-            parent.replaceChild(frag, VRElement.element);
+            parent.replaceChild(fragment, VRElement.element);
 
             // let getVRParentNode = function (VRParent) {
             //     let i = 0;

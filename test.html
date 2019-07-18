@@ -12,13 +12,59 @@
     <div she-text='d1'>
         <div she-text='d1-1' she-html='d1-2'>
             <div>
-                <p she-text="p1"></p>       
+                <p she-html="p1"></p>
             </div>
         </div>
-        <p she-html="p1"></p>
+        <p she-html="p2"></p>
+        <p she-for="arr" she-attribute=" item.style ">
+            <span she-text="key"></span><br/>
+            我叫<span she-text="item.name"></span><br/>
+            今年<span she-text="item.age"></span>岁了<br/>
+            我爱<span she-text="item.hobby"></span>
+        </p>
+        <div she-attribute='aa d1'>
+            <input type="text" she-attribute="input1">
+        </div>
+        <div she-attribute='aa d2'>
+            <input type="text" she-attribute="input1">
+        </div>
     </div>
     <script>
-       she('p1')('<a href="https://www.baidu.com/"></a>')
+        let redBox = {
+            backgroundColor: "red",
+            width: "100px",
+            height: "100px"
+        }
+        she
+            ('d1 d1-1 p1')('<a href="https://www.baidu.com/" she-text="a1"></a>')
+            ('a1')('fasdfads')
+            ('p2')('<div she-style="redBox"></div>')
+            ('redBox')(redBox)
+            ('input1')({
+                value: "111111",
+                style: "color: red;"
+            })
+            ('input1')({
+                sheStyle: 'xxx',
+                placeholder: "22222222222"
+            })
+            ('arr')(
+                {
+                    one: {
+                        name: "小明 ",
+                        age: 10,
+                        hobby: " 唱歌",
+                        style: { style: "color: blue;"}
+                    },
+                    two: {
+                        name: "小红 ",
+                        age: 12,
+                        hobby: " 跳舞",
+                        style: { style: "color: red;"}
+                    }
+                }
+            )
+            
     </script>
 </body>
 </html>
