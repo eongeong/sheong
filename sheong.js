@@ -11,20 +11,20 @@
         enumerableTree: undefined,
         getSuperiorElement: undefined,
         updateSuperiorVRElement: undefined,
-        rendering: undefined,
+        renderGuard : undefined,
         isQuery: false,
         isWatch: true
     };
 
     dev.command['she-text'] = function(VRElement, value){
-        dev.rendering(function(){
+        dev.renderGuard(function(){
             VRElement.element.textContent = value;
             VRElement.children = [];
         });
     };
 
     dev.command['she-html'] = function(VRElement, value){
-        dev.rendering(function(){
+        dev.renderGuard(function(){
             VRElement.element.innerHTML = value;
             VRElement.children = [];
             if( value.search( new RegExp('<[A-Za-z\/]+>', 'g') ) !== -1 ){
@@ -35,7 +35,7 @@
 
     dev.command['she-style'] = function(VRElement, value, name){
         if(typeof value === 'object'){
-            dev.rendering(function(){
+            dev.renderGuard(function(){
                 let styleString =  VRElement.element.hasAttribute('style') ? VRElement.element.getAttribute('style') : '';
                 const attributeData = VRElement.element.getAttribute(name),
                     parseStyle = function(styleObject){
@@ -54,9 +54,8 @@
 
                 if(attributeData !== null){
                     styleString = styleString.replace(parseStyle( JSON.parse(attributeData) ), '');
-
                 }
-                
+
                 VRElement.element.setAttribute('style', styleString + parseStyle(value));
                 VRElement.element.setAttribute(name, JSON.stringify(value));
             });
@@ -66,7 +65,7 @@
 
     dev.command['she-attribute'] = function(VRElement, value, name){
         if(typeof value === 'object'){
-            dev.rendering(function(){
+            dev.renderGuard(function(){
                 const attributeData = VRElement.element.getAttribute(name);
                 if(attributeData !== null){
                     for (const key in JSON.parse(attributeData)) {
@@ -76,7 +75,7 @@
                 for(const key in value){
                     VRElement.element.setAttribute(key.replace( new RegExp('[A-Z]', 'g'), function (kw) {return '-' + kw.toLowerCase();} ), value[key]);
                 }
-    
+
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
                 VRElement.element.setAttribute(name, JSON.stringify(value));
             });
@@ -85,19 +84,19 @@
 
     dev.command['she-for'] = function(VRElement, value, name){
         if(typeof value === 'object'){
-            dev.rendering(function(){
+            dev.renderGuard(function(){
                 const superiorElement = dev.getSuperiorElement(VRElement);
                 if(superiorElement !== null){
                     const parentElement = VRElement.element.parentNode,
                         fragment = document.createDocumentFragment(),
                         loopElements = parentElement.querySelectorAll('[she-for='+ name +']');
-        
+
                     let i = 1;
                     while( i < loopElements.length){
                         parentElement.removeChild(loopElements[i]);
                         i++;
                     }
-        
+
                     for(const key in value){
                         const element = VRElement.element.cloneNode(true);
                         element.setAttribute('item', JSON.stringify(value[key]));
@@ -132,15 +131,15 @@
                                     }
                                 }
                             };
-        
+
                             if(VRElement.name[i].indexOf('item') !== -1){
-                                let item = getData('item');
+                                const item = getData('item');
                                 dev.command[VRElement.command[i]](VRElement, eval( VRElement.name[i] ), VRElement.name[i]);
                             }
                             if(VRElement.name[i] === 'key'){
                                 dev.command[VRElement.command[i]](VRElement, getData('key'), VRElement.name[i]);
                             }
-        
+
                             i++;
                         }
                     });
@@ -207,7 +206,7 @@
                 }
                 i++;
             }
-        }
+        };
         enumerable(tree);
     };
 
@@ -239,9 +238,9 @@
                 i++;
             }
         });
-    }
+    };
 
-    dev.rendering = function(callback){
+    dev.renderGuard = function(callback){
         dev.isWatch = false;
         dev.isQuery = false;
         callback();
@@ -293,7 +292,7 @@
 
                     i++;
                 }
-            }
+            };
 
             const timer = setInterval(function(){
                 if(dev.isQuery){
@@ -303,7 +302,7 @@
             },1);
 
             return she;
-        }
+        };
     };
 
     const DOMLoad = function(){
