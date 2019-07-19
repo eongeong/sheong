@@ -1,6 +1,6 @@
-(function(global,factory){
+(function(global, factory){
     global.sheong = global.she = factory();
-})(this,function(){
+})(this, function(){
     'use strict';
 
     const dev = {
@@ -11,118 +11,141 @@
         enumerableTree: undefined,
         getSuperiorElement: undefined,
         updateSuperiorVRElement: undefined,
-        isCreateTreeFinish: false,
+        rendering: undefined,
+        isQuery: false,
         isWatch: true
     };
 
     dev.command['she-text'] = function(VRElement, value){
-        dev.isWatch = false;
-        VRElement.element.textContent = value;
-        dev.isCreateTreeFinish = false;
-        VRElement.children = [];
-        dev.isCreateTreeFinish = true;
-        dev.isWatch = true;
+        dev.rendering(function(){
+            VRElement.element.textContent = value;
+            VRElement.children = [];
+        });
     };
 
     dev.command['she-html'] = function(VRElement, value){
-        dev.isWatch = false;
-        VRElement.element.innerHTML = value;
-        dev.isCreateTreeFinish = false;
-        VRElement.children = [];
-        if( value.search( new RegExp('<[A-Za-z\/]+>', 'g') ) !== -1 ){
-            dev.createTree(VRElement.element.children, VRElement.children);
-        }
-        dev.isCreateTreeFinish = true;
-        dev.isWatch = true;
+        dev.rendering(function(){
+            VRElement.element.innerHTML = value;
+            VRElement.children = [];
+            if( value.search( new RegExp('<[A-Za-z\/]+>', 'g') ) !== -1 ){
+                dev.createTree(VRElement.element.children, VRElement.children);
+            }
+        });
     };
 
-    dev.command['she-style'] = function(VRElement, value){
+    dev.command['she-style'] = function(VRElement, value, name){
         if(typeof value === 'object'){
-            let styleData = '';
-            for(const key in value){
-                styleData += key.replace( new RegExp('[A-Z]', 'g'), function (kw) {
-                    return '-' + kw.toLowerCase();
-                });
-                styleData += ':';
-                styleData += value[key];
-                styleData += ';';
-            }
-            VRElement.element.setAttribute('style', styleData);
+            dev.rendering(function(){
+                let styleString =  VRElement.element.hasAttribute('style') ? VRElement.element.getAttribute('style') : '';
+                const attributeData = VRElement.element.getAttribute(name),
+                    parseStyle = function(styleObject){
+                        let styleString = '';
+                        for(const key in styleObject){
+                            styleString += key.replace( new RegExp('[A-Z]', 'g'), function (kw) {
+                                return '-' + kw.toLowerCase();
+                            });
+                            styleString += ':';
+                            styleString += styleObject[key];
+                            styleString += ';';
+                        }
+
+                        return styleString;
+                    };
+
+                if(attributeData !== null){
+                    styleString = styleString.replace(parseStyle( JSON.parse(attributeData) ), '');
+
+                }
+                
+                VRElement.element.setAttribute('style', styleString + parseStyle(value));
+                VRElement.element.setAttribute(name, JSON.stringify(value));
+            });
         }
+
     };
 
     dev.command['she-attribute'] = function(VRElement, value, name){
         if(typeof value === 'object'){
-            const attributeData = VRElement.element.getAttribute(name);
-            if(attributeData !== null){
-                for (const key in JSON.parse(attributeData)) {
-                    VRElement.element.removeAttribute(key.replace( new RegExp('[A-Z]', 'g'), function (kw) {return '-' + kw.toLowerCase();} ));
+            dev.rendering(function(){
+                const attributeData = VRElement.element.getAttribute(name);
+                if(attributeData !== null){
+                    for (const key in JSON.parse(attributeData)) {
+                        VRElement.element.removeAttribute(key.replace( new RegExp('[A-Z]', 'g'), function (kw) {return '-' + kw.toLowerCase();} ));
+                    }
                 }
-            }
-            for(const key in value){
-                VRElement.element.setAttribute(key.replace( new RegExp('[A-Z]', 'g'), function (kw) {return '-' + kw.toLowerCase();} ), value[key]);
-            }
-
-            dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-            VRElement.element.setAttribute(name, JSON.stringify(value));
+                for(const key in value){
+                    VRElement.element.setAttribute(key.replace( new RegExp('[A-Z]', 'g'), function (kw) {return '-' + kw.toLowerCase();} ), value[key]);
+                }
+    
+                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+                VRElement.element.setAttribute(name, JSON.stringify(value));
+            });
         }
     };
 
-    dev.command['she-for'] = function(VRElement, value){
+    dev.command['she-for'] = function(VRElement, value, name){
         if(typeof value === 'object'){
-            dev.isWatch = false;
-            const superiorElement = dev.getSuperiorElement(VRElement),
-                parentElement = VRElement.element.parentNode,
-                fragment = document.createDocumentFragment();
-            for(const key in value){
-                const element = VRElement.element.cloneNode(true);
-                element.setAttribute('item', JSON.stringify(value[key]));
-                element.setAttribute('key', key);
-                fragment.appendChild( element );
-            }
-            parentElement.replaceChild(fragment, VRElement.element);
-            dev.updateSuperiorVRElement(superiorElement);
-            dev.enumerableTree(dev.tree, function(VRElement){
-                let i = 0;
-                while(i < VRElement.name.length){
-                    const getData = function(name){
-                        if(VRElement.element.hasAttribute(name)){
-                            switch(name){
-                                case 'key':
-                                    return VRElement.element.getAttribute('key'); 
-                                case 'item':
-                                    return JSON.parse(VRElement.element.getAttribute('item'));
-                            }
-                        }else{
-                            let element = VRElement.element.parentNode;
-                            while(element.tagName !== 'BODY'){
-                                if(element.hasAttribute('she-for')){
+            dev.rendering(function(){
+                const superiorElement = dev.getSuperiorElement(VRElement);
+                if(superiorElement !== null){
+                    const parentElement = VRElement.element.parentNode,
+                        fragment = document.createDocumentFragment(),
+                        loopElements = parentElement.querySelectorAll('[she-for='+ name +']');
+        
+                    let i = 1;
+                    while( i < loopElements.length){
+                        parentElement.removeChild(loopElements[i]);
+                        i++;
+                    }
+        
+                    for(const key in value){
+                        const element = VRElement.element.cloneNode(true);
+                        element.setAttribute('item', JSON.stringify(value[key]));
+                        element.setAttribute('key', key);
+                        fragment.appendChild( element );
+                    }
+                    parentElement.replaceChild(fragment, VRElement.element);
+                    dev.updateSuperiorVRElement(superiorElement);
+                    dev.enumerableTree(dev.tree, function(VRElement){
+                        let i = 0;
+                        while(i < VRElement.name.length){
+                            const getData = function(name){
+                                if(VRElement.element.hasAttribute(name)){
                                     switch(name){
                                         case 'key':
-                                            return element.getAttribute('key');
+                                            return VRElement.element.getAttribute('key');
                                         case 'item':
-                                            return JSON.parse(element.getAttribute('item'));
+                                            return JSON.parse(VRElement.element.getAttribute('item'));
                                     }
-                                    break;
+                                }else{
+                                    let element = VRElement.element.parentNode;
+                                    while(element.tagName !== 'BODY'){
+                                        if(element.hasAttribute('she-for')){
+                                            switch(name){
+                                                case 'key':
+                                                    return element.getAttribute('key');
+                                                case 'item':
+                                                    return JSON.parse(element.getAttribute('item'));
+                                            }
+                                        }
+                                        element = element.parentNode;
+                                    }
                                 }
-                                element = element.parentNode;
+                            };
+        
+                            if(VRElement.name[i].indexOf('item') !== -1){
+                                let item = getData('item');
+                                dev.command[VRElement.command[i]](VRElement, eval( VRElement.name[i] ), VRElement.name[i]);
                             }
+                            if(VRElement.name[i] === 'key'){
+                                dev.command[VRElement.command[i]](VRElement, getData('key'), VRElement.name[i]);
+                            }
+        
+                            i++;
                         }
-                    };
-
-                    if(VRElement.name[i].indexOf('item') !== -1){
-                        let item = getData('item');
-                        dev.command[VRElement.command[i]](VRElement, eval( VRElement.name[i] ));
-                    }
-                    if(VRElement.name[i] === 'key'){
-                        dev.command[VRElement.command[i]](VRElement, getData('key'));
-                    }
-
-                    i++;
+                    });
                 }
             });
-
-            dev.isWatch = true;
         }
     }
 
@@ -167,10 +190,10 @@
 
     dev.updateTree = function(){
         if(dev.isWatch){
-            dev.isCreateTreeFinish = false;
+            dev.isQuery = false;
             dev.tree = [];
             dev.createTree(document.body.children, dev.tree);
-            dev.isCreateTreeFinish = true;
+            dev.isQuery = true;
         }
     };
 
@@ -190,13 +213,17 @@
 
     dev.getSuperiorElement = function(VRElement){
         let element = VRElement.element.parentNode;
-        while (element.tagName !== 'BODY'){
-            for(const command in dev.command){
-                if(element.hasAttribute(command)){
-                    return element;
+        if(element !== null){
+            while (element.tagName !== 'BODY'){
+                for(const command in dev.command){
+                    if(element.hasAttribute(command)){
+                        return element;
+                    }
                 }
+                element = element.parentNode;
             }
-            element = element.parentNode;
+        }else{
+            return null;
         }
     };
 
@@ -205,16 +232,22 @@
             let i = 0;
             while(i < VRElement.name.length){
                 if(VRElement.element === superiorElement){
-                    dev.isCreateTreeFinish = false;
                     VRElement.children = [];
                     dev.createTree(VRElement.element.children, VRElement.children);
-                    dev.isCreateTreeFinish = true;
                     break;
                 }
                 i++;
             }
         });
     }
+
+    dev.rendering = function(callback){
+        dev.isWatch = false;
+        dev.isQuery = false;
+        callback();
+        dev.isQuery = true;
+        dev.isWatch = true;
+    };
 
     const she = function (name) {
         const names = name.trim().split(new RegExp('\\s'));
@@ -229,6 +262,9 @@
                         let k = 0;
                         while ( k < tree[i].name.length ){
                             if( names[names.length - 1] === tree[i].name[k] ){
+                                if(typeof parameter === 'function'){
+                                    parameter = parameter(tree[i].element);
+                                }
                                 dev.command[tree[i].command[k]](tree[i], parameter, tree[i].name[k]);
                             }
                             k++;
@@ -260,18 +296,19 @@
             }
 
             const timer = setInterval(function(){
-                if(dev.isCreateTreeFinish){
+                if(dev.isQuery){
                     clearInterval(timer);
                     enumerable(names[j], dev.tree);
                 }
             },1);
+
             return she;
         }
     };
 
     const DOMLoad = function(){
         dev.createTree(document.body.children, dev.tree);
-        dev.isCreateTreeFinish = true;
+        dev.isQuery = true;
         document.removeEventListener('DOMContentLoaded', DOMLoad);
     };
     document.addEventListener('DOMContentLoaded', DOMLoad);
