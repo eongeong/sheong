@@ -53,7 +53,7 @@
                     };
 
                 if(attributeData !== null){
-                    styleString = styleString.replace(parseStyle( JSON.parse(attributeData) ), '');
+                    styleString = styleString.replace(parseStyleObject( JSON.parse(attributeData) ), '');
                 }
 
                 VRElement.element.setAttribute('style', styleString + parseStyleObject(value));
