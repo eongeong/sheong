@@ -38,7 +38,7 @@
             dev.renderGuard(function(){
                 let styleString =  VRElement.element.hasAttribute('style') ? VRElement.element.getAttribute('style') : '';
                 const attributeData = VRElement.element.getAttribute(name),
-                    parseStyle = function(styleObject){
+                    parseStyleObject = function(styleObject){
                         let styleString = '';
                         for(const key in styleObject){
                             styleString += key.replace( new RegExp('[A-Z]', 'g'), function (kw) {
@@ -56,7 +56,7 @@
                     styleString = styleString.replace(parseStyle( JSON.parse(attributeData) ), '');
                 }
 
-                VRElement.element.setAttribute('style', styleString + parseStyle(value));
+                VRElement.element.setAttribute('style', styleString + parseStyleObject(value));
                 VRElement.element.setAttribute(name, JSON.stringify(value));
             });
         }
@@ -89,11 +89,11 @@
                 if(superiorElement !== null){
                     const parentElement = VRElement.element.parentNode,
                         fragment = document.createDocumentFragment(),
-                        loopElements = parentElement.querySelectorAll('[she-for='+ name +']');
+                        enumerableElements = parentElement.querySelectorAll('[she-for='+ name +']');
 
                     let i = 1;
-                    while( i < loopElements.length){
-                        parentElement.removeChild(loopElements[i]);
+                    while(i < enumerableElements.length){
+                        parentElement.removeChild(enumerableElements[i]);
                         i++;
                     }
 
