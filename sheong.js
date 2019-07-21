@@ -138,7 +138,7 @@
                 }
             });
         }
-    }
+    };
 
     dev.createTree = function (elements, tree) {
         let i = 0;
