@@ -27,9 +27,7 @@
         dev.renderGuard(function () {
             VRElement.element.innerHTML = value;
             VRElement.children = [];
-            if (value.search(new RegExp('<[A-Za-z\/]+>', 'g')) !== -1) {
-                dev.createTree(VRElement.element.children, VRElement.children);
-            }
+            dev.createTree(VRElement.element.children, VRElement.children);
         });
     };
 
