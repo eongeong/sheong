@@ -38,21 +38,19 @@
   
     dev.command["she-style"] = function (VRElement, value) {
       if (typeof value === "object") {
-        dev.renderGuard(function () {
-          const parseStyleObject = function (styleObject) {
-            let styleString = "";
-            for (const key in styleObject) {
-              styleString += key.replace(new RegExp("[A-Z]", "g"), function (kw) {
-                return "-" + kw.toLowerCase();
-              });
-              styleString += ":";
-              styleString += styleObject[key];
-              styleString += ";";
-            }
-            return styleString;
-          };
-          VRElement.element.setAttribute("style", parseStyleObject(value));
-        });
+        const parseStyleObject = function (styleObject) {
+          let styleString = "";
+          for (const key in styleObject) {
+            styleString += key.replace(new RegExp("[A-Z]", "g"), function (kw) {
+              return "-" + kw.toLowerCase();
+            });
+            styleString += ":";
+            styleString += styleObject[key];
+            styleString += ";";
+          }
+          return styleString;
+        };
+        VRElement.element.setAttribute("style", parseStyleObject(value));
       }
     };
   
