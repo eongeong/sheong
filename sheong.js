@@ -80,44 +80,46 @@
     dev.command["she-for"] = function (VRElement, value, name) {
       if (typeof value === "object") {
         dev.renderGuard(function () {
-          let superiorElement = dev.getSuperiorElement(VRElement);
+          const superiorElement = dev.getSuperiorElement(VRElement);
           if (superiorElement !== null) {
-            const parentElement = VRElement.element.parentNode,
-              fragment = document.createDocumentFragment(),
-              enumerableElements = parentElement.querySelectorAll("[she-for=" + name + "]");
-  
-            let i = 1;
-            while (i < enumerableElements.length) {
-              parentElement.removeChild(enumerableElements[i]);
-              i++;
+            const fragment = document.createDocumentFragment(),
+              forCookie = VRElement.element.getAttribute("she-for").split(":");
+            while(
+              VRElement.element.nextElementSibling !== null
+              &&
+              VRElement.element.nextElementSibling.hasAttribute("she-for")
+              &&
+              VRElement.element.nextElementSibling.getAttribute("she-for").indexOf(name) !== -1
+            ){
+              VRElement.element.parentNode.removeChild(VRElement.element.nextElementSibling);
             }
   
             for (const key in value) {
               const element = VRElement.element.cloneNode(true);
-              element.setAttribute("item", JSON.stringify(value[key]));
-              element.setAttribute("key", key);
+              element.setAttribute(forCookie[1], JSON.stringify(value[key]));
+              element.setAttribute(forCookie[2], key);
               fragment.appendChild(element);
             }
-            parentElement.replaceChild(fragment, VRElement.element);
+            VRElement.element.parentNode.replaceChild(fragment, VRElement.element);
             dev.updateSuperiorVRElement(superiorElement);
             dev.enumerableTree(dev.tree, function (VRElement) {
               let i = 0;
               while (i < VRElement.name.length) {
                 const getData = function (name) {
                   if (VRElement.element.hasAttribute(name)) {
-                    if (name === "item") {
-                      return JSON.parse(VRElement.element.getAttribute("item"));
+                    if (name === forCookie[1]) {
+                      return JSON.parse(VRElement.element.getAttribute( forCookie[1] ));
                     } else {
-                      return VRElement.element.getAttribute("key");
+                      return VRElement.element.getAttribute( forCookie[2] );
                     }
                   } else {
                     let element = VRElement.element.parentNode;
                     while (element.tagName !== "BODY") {
                       if (element.hasAttribute("she-for")) {
-                        if (name === "item") {
-                          return JSON.parse(element.getAttribute("item"));
+                        if (name === forCookie[1]) {
+                          return JSON.parse(element.getAttribute(forCookie[1]));
                         } else {
-                          return element.getAttribute("key");
+                          return element.getAttribute(forCookie[2]);
                         }
                       }
                       element = element.parentNode;
@@ -125,12 +127,14 @@
                   }
                 };
   
-                if (VRElement.name[i].indexOf("item") !== -1) {
-                  const item = getData("item");
-                  dev.command[VRElement.command[i]](VRElement, eval(VRElement.name[i]), VRElement.name[i]);
+                if (VRElement.name[i].search( new RegExp(`^${forCookie[1]}$|^${forCookie[1]}[\\.\\[]`, "g") ) !== -1) {
+                  const item = getData(forCookie[1]);
+                  if(item){
+                    dev.command[VRElement.command[i]](VRElement, eval( "item" + VRElement.name[i].replace(forCookie[1], "") ), VRElement.name[i]);
+                  }
                 }
-                if (VRElement.name[i] === "key") {
-                  dev.command[VRElement.command[i]](VRElement, getData("key"), VRElement.name[i]);
+                if (VRElement.name[i] === forCookie[2]) {
+                  dev.command[VRElement.command[i]](VRElement, getData(forCookie[2]), VRElement.name[i]);
                 }
   
                 i++;
@@ -165,8 +169,8 @@
               }
               isHasOneCommand = true;
             }
-  
-            tree[tree.length - 1].name[j] = elements[i].getAttribute(command).trim();
+            
+            tree[tree.length - 1].name[j] = elements[i].getAttribute(command).trim().split(":")[0];
             tree[tree.length - 1].command[j] = command;
   
             j++;
@@ -239,6 +243,7 @@
       callback();
       dev.isWatch = true;
     };
+
   
     const she = function (name) {
       const names = name.trim().split(new RegExp("\\s"));
@@ -291,7 +296,7 @@
       };
     };
   
-    she.load = function (callback) {
+    she.loaded = function (callback) {
       const timer = setInterval(function () {
         if(typeof callback === "function"){
           clearInterval(timer);
@@ -300,8 +305,8 @@
         }
       },1);
     };
-  
-    document.addEventListener("DOMNodeInserted", dev.updateTree);
+    
+    document.addEventListener("DOMNodeInserted",dev.updateTree);
     document.addEventListener("DOMNodeRemoved", dev.updateTree);
   
     return she;
