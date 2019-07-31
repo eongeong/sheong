@@ -57,6 +57,7 @@
     dev.command["she-attribute"] = function (VRElement, value, name) {
       if (typeof value === "object") {
         dev.renderGuard(function () {
+          let isUpdateSuperiorVRElement = false;
           const attributeData = JSON.parse(VRElement.element.getAttribute(name));
           if (attributeData !== null) {
             for (const key in attributeData) {
@@ -65,13 +66,23 @@
               }));
             }
           }
+
           for (const key in value) {
-            VRElement.element.setAttribute(key.replace(new RegExp("[A-Z]", "g"), function (kw) {
+            const attribute = key.replace(new RegExp("[A-Z]", "g"), function (kw) {
               return "-" + kw.toLowerCase();
-            }), value[key]);
+            });
+
+            if(attribute.indexOf("she") !== -1){
+              isUpdateSuperiorVRElement = true;
+            }
+            
+            VRElement.element.setAttribute(attribute, value[key]);
           }
-  
-          dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+
+          if(isUpdateSuperiorVRElement){
+            dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+          }
+          
           VRElement.element.setAttribute(name, JSON.stringify(value));
         });
       }
