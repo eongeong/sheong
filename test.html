@@ -9,61 +9,142 @@
     <title>Document</title>
 </head>
 <body>
-    <div she-text='d1'>
+    <!-- <div she-text='d1'>
         <div she-text='d1-1' she-html='d1-2'>
             <div>
                 <p she-html="p1"></p>
             </div>
         </div>
-        <p she-html="p2"></p>
-        <p she-for="arr" she-attribute=" item.style ">
-            <span she-text="key"></span><br/>
-            我叫<span she-text="item.name"></span><br/>
-            今年<span she-text="item.age"></span>岁了<br/>
-            我爱<span she-text="item.hobby"></span>
-        </p>
-        <div she-attribute='aa d1'>
+        <p she-html="p2"></p> -->
+        <div she-for="arr:ite:i" she-attribute="ite.style">
+            <span she-text="i"></span><br/>
+            我叫<span she-text="ite.name"></span><br/>
+            今年<span she-text="ite.age"></span>岁了<br/>
+            我爱<span she-text="ite.hobby"></span>
+            <div she-for="ite.texts:it:index">
+                <p she-text="it.a"></p>
+            </div>
+            <div she-for="ite.array:member:i">
+                <p she-text="member.a"></p>
+            </div>
+        </div>
+        <!-- <div she-attribute='aa d1'>
             <input type="text" she-attribute="input1">
         </div>
         <div she-attribute='aa d2'>
             <input type="text" she-attribute="input1">
         </div>
-    </div>
+    </div> -->
     <script>
         let redBox = {
             backgroundColor: "red",
             width: "100px",
             height: "100px"
         }
-        she
-            ('d1 d1-1 p1')('<a href="https://www.baidu.com/" she-text="a1"></a>')
-            ('a1')('fasdfads')
-            ('p2')('<div she-style="redBox"></div>')
-            ('redBox')(redBox)
-            ('input1')({
-                value: "111111",
-                style: "color: red;"
-            })
-            ('input1')({
-                sheStyle: 'xxx',
-                placeholder: "22222222222"
-            })
-            ('arr')(
-                {
-                    one: {
-                        name: "小明 ",
-                        age: 10,
-                        hobby: " 唱歌",
-                        style: { style: "color: blue;"}
-                    },
-                    two: {
-                        name: "小红 ",
-                        age: 12,
-                        hobby: " 跳舞",
-                        style: { style: "color: red;"}
+
+        she.loaded(()=>{
+            she
+                // ('d1 d1-1 p1')('<a href="https://www.baidu.com/" she-text="a1"></a>')
+                // ('a1')('fasdfads')
+                // ('p2')('<div she-style="redBox"></div>')
+                // ('redBox')(redBox)
+                // ('input1')({
+                //     value: "111111",
+                //     style: "color: red;"
+                // })
+                // ('input1')({
+                //     sheStyle: 'xxx',
+                //     placeholder: "22222222222"
+                // })
+                ('arr')(
+                    {
+                        one: {
+                            name: "小明 ",
+                            age: 10,
+                            hobby: " 唱歌",
+                            style: { style: "color: blue;" ,dataSrc: "adsfas", sheText: "99999999999"}
+                        },
+                        two: {
+                            name: "小红 ",
+                            age: 12,
+                            hobby: " 跳舞",
+                            style: { style: "color: red;"}
+                        }
                     }
-                }
-            )
+                )
+                ('arr')(
+                    {
+                        one: {
+                            name: "小刚 ",
+                            age: 10,
+                            hobby: "跑步",
+                            style: { style: "color: blue;"},
+                            texts: [
+                                // "111111111",
+                                // "22222222222",
+                                // "33333333333"
+                                {
+                                    a:1,
+                                    b:2
+                                },
+                                {
+                                    a:3,
+                                    b:4
+                                }
+                            ],
+                            array: [
+                                {
+                                    a: "11111111"
+                                },
+                                {
+                                    a: "22222222"
+                                },
+                                {
+                                    a: "33333333"
+                                },
+                                {
+                                    a: "44444444"
+                                }
+                            ]
+                        },
+                        two: {
+                            name: "小黄 ",
+                            age: 12,
+                            hobby: "旅游",
+                            style: { style: "color: green;"},
+                            texts: [
+                                // "111111111",
+                                // "22222222222",
+                                // "33333333333"
+                                {
+                                    a:1,
+                                    b:2
+                                },
+                                {
+                                    a:3,
+                                    b:4
+                                }
+                            ],
+                            array: [
+                                {
+                                    a: "11111111"
+                                },
+                                {
+                                    a: "22222222"
+                                },
+                                {
+                                    a: "33333333"
+                                },
+                                {
+                                    a: "44444444"
+                                }
+                            ]
+                        }
+                    }
+                )
+        });
+
+        
             
     </script>
 </body>

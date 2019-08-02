@@ -138,9 +138,9 @@
                   }
                 };
   
-                if (VRElement.name[i].search( new RegExp(`^${forCookie[1]}$|^${forCookie[1]}[\\.\\[]`, "g") ) !== -1) {
+                if (VRElement.name[i].search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
                   const item = getData(forCookie[1]);
-                  if(item){
+                  if(item !== null){
                     dev.command[VRElement.command[i]](VRElement, eval( "item" + VRElement.name[i].replace(forCookie[1], "") ), VRElement.name[i]);
                   }
                 }
@@ -181,7 +181,7 @@
               isHasOneCommand = true;
             }
             
-            tree[tree.length - 1].name[j] = elements[i].getAttribute(command).trim().split(":")[0];
+            tree[tree.length - 1].name[j] = elements[i].getAttribute(command).split(":")[0];
             tree[tree.length - 1].command[j] = command;
   
             j++;
@@ -314,10 +314,10 @@
           dev.createTree(document.body.children, dev.tree);
           callback();
         }
-      },1);
+      }, 1);
     };
     
-    document.addEventListener("DOMNodeInserted",dev.updateTree);
+    document.addEventListener("DOMNodeInserted", dev.updateTree);
     document.addEventListener("DOMNodeRemoved", dev.updateTree);
   
     return she;
