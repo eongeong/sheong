@@ -164,7 +164,7 @@
     };
   
     dev.command["she-render"] = function (VRElement, value){
-        if(typeof value === "object"){
+        if(Array.isArray(value)){
             dev.renderGuard(function () {
                 VRElement.element.textContent = "";
                 VRElement.children = [];
@@ -370,17 +370,17 @@
     document.addEventListener("DOMNodeInserted", dev.updateTree);
     document.addEventListener("DOMNodeRemoved", dev.updateTree);
 
-    she.style = function(styleData){
+    she.style = function(styleArray){
       let styleString = "";
       let i = 0;
-      while(i < styleData.length){
-          styleString += styleData[i][0] + "{";
-          for(const key in styleData[i][1]){
+      while(i < styleArray.length){
+          styleString += styleArray[i][0] + "{";
+          for(const key in styleArray[i][1]){
               styleString += key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
                   return "-" + Keyword.toLowerCase();
               });
               styleString += ":";
-              styleString += styleData[i][1][key];
+              styleString += styleArray[i][1][key];
               styleString += ";";
           }
           styleString += "}";
