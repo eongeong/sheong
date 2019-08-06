@@ -23,5 +23,4 @@ const defaultStyle = [
       whiteSpace: "nowrap"
   }]
 ];
-
-module.exports = defaultStyle;
+export default defaultStyle;

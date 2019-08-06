@@ -4,12 +4,12 @@ module.exports = {
     mode: 'production',
     entry:  './js/index.js',
     output: {
-        path: __dirname + '/dist',
-        filename: 'index.js'
+      path: __dirname + '/dist',
+      filename: 'js/' + 'index.js'
     },
     devServer: {
-        inline: true,
-        port: 8099
+      inline: true,
+      port: 4000
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -22,5 +22,16 @@ module.exports = {
         }
       }),
       new webpack.HotModuleReplacementPlugin()
-    ]
+    ],
+    module: {
+        rules: [
+          {
+            test: /\.(png|jpg|gif|svg)$/,
+            loader: 'file-loader',
+            options: {
+              name: 'img/[name].[ext]'
+            }
+          }
+        ]
+    }
 }

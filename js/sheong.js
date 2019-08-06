@@ -1,13 +1,13 @@
-(function (root, factory) {
+(function (factory) {
     if(typeof exports === "object" && typeof module === "object")
       module.exports = factory();
     else if(typeof define === "function" && define.amd)
       define([], factory);
     else if(typeof exports === "object")
-      exports["sheong"] = factory();
+      exports.sheong = exports.she = factory();
     else
-      root["sheong"] = factory();
-  })(this, function () {
+    window.sheong = window.she = factory();
+  })(function () {
     "use strict";
   
     const dev = {
@@ -401,13 +401,13 @@
       document.head.appendChild(style);
     }
 
-    location.hash = "#/";
-    window.addEventListener("hashchange", function(){
-      const hash = location.hash.split("#")[1];
-      if(typeof she.router === "function"){
-        she.router(hash);
-      }
-    });
+    she.router = function(callback){
+      location.hash = "#/";
+      window.addEventListener("hashchange", function(){
+        const hash = location.hash.split("#")[1];
+        callback(hash);
+      });
+    }
 
     return she;
   });

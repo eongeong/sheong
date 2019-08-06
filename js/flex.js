@@ -50,5 +50,4 @@ const flex = [
         justifyContent: "flex-end"
     }]
 ];
-
-module.exports = flex;
+export default flex;

@@ -1,5 +1,5 @@
 {
-  "name": "sheong.cn",
+  "name": "sheong",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,9 +8,10 @@
     "build": "node  ./node_modules/webpack/bin/webpack.js",
     "dev": "webpack-dev-server --devtool eval --progress --colors --content-base build"
   },
-  "author": "shenyang",
+  "author": "sheong",
   "license": "ISC",
   "devDependencies": {
+    "file-loader": "^4.1.0",
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
