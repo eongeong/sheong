@@ -399,7 +399,7 @@
       const style = document.createElement("style");
       style.innerHTML = styleString;
       document.head.appendChild(style);
-    }
+    };
 
     she.router = function(callback){
       location.hash = "#/";
@@ -407,7 +407,7 @@
         const hash = location.hash.split("#")[1];
         callback(hash);
       });
-    }
+    };
 
     return she;
   });
