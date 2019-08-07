@@ -44,20 +44,17 @@
     };
   
     dev.command["she-style"] = function (VRElement, value) {
-      if (typeof value === "object") {
-        const parseStyleObject = function (styleObject) {
-          let styleString = "";
-          for (const key in styleObject) {
-            styleString += key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-              return "-" + Keyword.toLowerCase();
-            });
-            styleString += ":";
-            styleString += styleObject[key];
-            styleString += ";";
-          }
-          return styleString;
-        };
-        VRElement.element.setAttribute("style", parseStyleObject(value));
+      if (typeof value === "object") {        
+        let styleString = "";
+        for (const key in value) {
+          styleString += key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
+            return "-" + Keyword.toLowerCase();
+          });
+          styleString += ":";
+          styleString += value[key];
+          styleString += ";";
+        }
+        VRElement.element.setAttribute("style", styleString);
       }
     };
   
