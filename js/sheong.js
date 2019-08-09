@@ -98,12 +98,12 @@
     if (typeof value === "object") {
       dev.renderGuard(function () {
         const superiorElement = dev.getSuperiorElement(VRElement);
-        if ( dev.notNull(superiorElement) ) {
+        if ( superiorElement !== null ) {
           const fragment = document.createDocumentFragment(),
             forCookie = VRElement.element.getAttribute("she-for").split(":");
 
           while(
-            dev.notNull(VRElement.element.nextElementSibling)
+           VRElement.element.nextElementSibling !== null
             &&
             VRElement.element.nextElementSibling.hasAttribute("she-for")
             &&
@@ -278,7 +278,7 @@
 
   dev.getSuperiorElement = function (VRElement) {
     let element = VRElement.element.parentNode;
-    if ( dev.notNull(element) ) {
+    if ( element !== null ) {
       while (element.tagName !== "BODY") {
         for (const command in dev.commands) {
           if (element.hasAttribute(command)) {
@@ -315,8 +315,8 @@
 
   dev.notNull = function(value){
     switch(value){
-      case null: return false;
       case undefined: return false;
+      case null: return false;
       case "": return false;
       default: return true;
     }
