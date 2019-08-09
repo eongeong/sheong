@@ -255,8 +255,9 @@
 
   dev.updateTree = function () {
     if (dev.isWatch) {
-      dev.tree = [];
-      dev.createTree(document.body.children, dev.tree);
+      const tree = [];
+      dev.createTree(document.body.children, tree);
+      dev.tree = tree;
     }
   };
 

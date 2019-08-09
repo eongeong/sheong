@@ -15,7 +15,7 @@ she
     ["div", { class:"container fcc", sheRender: "container" }]
 ])
 
-const data = ["Welcome", "this is a parasitic frame"]
+const data = ["Welcome", "this is a loyal to native JS"]
 
 home(data[0]);
 she.router((hash) => {
