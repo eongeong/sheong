@@ -20,12 +20,17 @@
     updateSuperiorVRElement: undefined,
     renderGuard: undefined,
     isWatch: true,
-    notNull: undefined
+    notNull: undefined,
+    parseHump: undefined,
+    isUpdateTree: true
   };
 
-  dev.commands["she"] = function (VRElement, value, name) {
-    if( dev.notNull(value) ){
-      VRElement.element.setAttribute(name, JSON.stringify(value));
+  dev.commands["she"] = function (VRElement, value) {
+    if( typeof value === "function" && value(VRElement.element) === false ){
+      dev.renderGuard(function () {
+        VRElement.element.removeAttribute("she");
+        dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+      });
     }
   };
 
@@ -45,12 +50,10 @@
   };
 
   dev.commands["she-style"] = function (VRElement, value) {
-    if (typeof value === "object") {        
+    if (typeof value === "object" && !Array.isArray(value)) {
       let styleString = "";
       for (const key in value) {
-        styleString += key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-          return "-" + Keyword.toLowerCase();
-        });
+        styleString +=  dev.parseHump(key);
         styleString += ":";
         styleString += value[key];
         styleString += ";";
@@ -60,35 +63,31 @@
   };
 
   dev.commands["she-attribute"] = function (VRElement, value, name) {
-    if (typeof value === "object") {
+    if (typeof value === "object" && !Array.isArray(value)) {
       dev.renderGuard(function () {
+        name = parseHump(name);
         let isUpdateSuperiorVRElement = false;
-
         if(VRElement.element.hasAttribute(name)){
           const attributeData = JSON.parse(VRElement.element.getAttribute(name));
           for (const key in attributeData) {
-            VRElement.element.removeAttribute(key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-              return "-" + Keyword.toLowerCase();
-            }));
+            VRElement.element.removeAttribute( dev.parseHump(key) );
           }
         }
 
         for (const key in value) {
-          const attribute = key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-            return "-" + Keyword.toLowerCase();
-          });
-          
+          const attribute = dev.parseHump(key);
+
           if(isUpdateSuperiorVRElement === false && attribute.indexOf("she") !== -1){
               isUpdateSuperiorVRElement = true;
           }
-          
+
           VRElement.element.setAttribute(attribute, value[key]);
         }
 
         if(isUpdateSuperiorVRElement){
           dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
         }
-        
+
         VRElement.element.setAttribute(name, JSON.stringify(value));
       });
     }
@@ -99,11 +98,13 @@
       dev.renderGuard(function () {
         const superiorElement = dev.getSuperiorElement(VRElement);
         if ( superiorElement !== null ) {
-          const fragment = document.createDocumentFragment(),
-            forCookie = VRElement.element.getAttribute("she-for").split(":");
+          const fragment = document.createDocumentFragment();
+          const forCookie = VRElement.element.getAttribute("she-for").split(":");
+          forCookie[1] = dev.parseHump(forCookie[1]);
+          forCookie[2] = dev.parseHump(forCookie[2]);
 
           while(
-           VRElement.element.nextElementSibling !== null
+            VRElement.element.nextElementSibling !== null
             &&
             VRElement.element.nextElementSibling.hasAttribute("she-for")
             &&
@@ -135,9 +136,9 @@
                   while (element.tagName !== "BODY") {
                     if (element.hasAttribute("she-for")) {
                       if (name === forCookie[1]) {
-                        return JSON.parse(element.getAttribute(forCookie[1]));
+                        return JSON.parse(element.getAttribute( forCookie[1] ));
                       } else {
-                        return element.getAttribute(forCookie[2]);
+                        return element.getAttribute( forCookie[2] );
                       }
                     }
                     element = element.parentNode;
@@ -145,6 +146,7 @@
                 }
               };
 
+              VRElement.name[i] = dev.parseHump(VRElement.name[i]);
               if (VRElement.name[i].search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
                 const item = getData(forCookie[1]);
                 if( dev.notNull(item) ){
@@ -172,15 +174,14 @@
               const fragment = document.createDocumentFragment();
 
               const renderer = function(parent, value){
+
                 let i = 0;
-                while( i < value.length ){
+                while( i < value.length && dev.notNull(value[i]) ){
                   const element = document.createElement(value[i][0]);
 
                   if( dev.notNull(value[i][1]) ){
                     for(const attribute in value[i][1]){
-                      const attributeName = attribute.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-                          return "-" + Keyword.toLowerCase();
-                      });
+                      const attributeName = dev.parseHump(attribute);
 
                       if(isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1){
                           isUpdateSuperiorVRElement = true;
@@ -204,7 +205,7 @@
                 }
               }
               renderer(fragment, value);
-  
+
               VRElement.element.appendChild(fragment);
 
               if(isUpdateSuperiorVRElement){
@@ -212,6 +213,36 @@
               }
           });
       }
+  };
+
+  dev.commands["she-change"] = function(VRElement, value){
+    if(Array.isArray(value)){
+      let oldStyleString = VRElement.element.getAttribute("style");      
+      if( dev.notNull(oldStyleString) ){
+        let i = 0;
+        while( i < value.length ){
+          let styleString = "";
+          for (const key in value[i]) {
+            styleString +=  dev.parseHump(key);
+            styleString += ":";
+            styleString += value[i][key];
+            styleString += ";";
+          }
+          if(styleString === oldStyleString){
+            i++;
+            if(i === value.length ){
+              i = 0;
+            }
+            dev.commands["she-style"](VRElement, value[i]);
+            return;
+          }
+          i++;
+        }
+        dev.commands["she-style"](VRElement, value[0]);
+      }else{
+        dev.commands["she-style"](VRElement, value[0]);
+      }
+    }
   };
 
   dev.createTree = function (elements, tree) {
@@ -238,8 +269,13 @@
             }
             isHasOneCommand = true;
           }
-          
-          tree[tree.length - 1].name[j] = elements[i].getAttribute(command).split(":")[0];
+
+          if(command === "she-for"){
+            tree[tree.length - 1].name[j] = elements[i].getAttribute(command).split(":")[0];
+          }else{
+            tree[tree.length - 1].name[j] = elements[i].getAttribute(command);
+          }
+
           tree[tree.length - 1].command[j] = command;
 
           j++;
@@ -254,10 +290,14 @@
   };
 
   dev.updateTree = function () {
-    if (dev.isWatch) {
-      const tree = [];
-      dev.createTree(document.body.children, tree);
-      dev.tree = tree;
+    if (dev.isWatch && dev.isUpdateTree) {
+      dev.isUpdateTree = false;
+      setTimeout(function(){
+        dev.isUpdateTree = true;
+        const tree = [];
+        dev.createTree(document.body.children, tree);
+        dev.tree = tree;
+      },1000);
     }
   };
 
@@ -319,12 +359,19 @@
       case undefined: return false;
       case null: return false;
       case "": return false;
+      case false: return false;
       default: return true;
     }
   };
 
+  dev.parseHump = function(value){
+    return value.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
+      return "-" + Keyword.toLowerCase();
+    });
+  };
+
   const she = function (name) {
-    const names = name.trim().split(new RegExp("\\s"));
+    const names = name.trim().split(new RegExp("\\s+"));
 
     return function (parameter) {
       let j = 0;
@@ -336,11 +383,7 @@
             let k = 0;
             while (k < tree[i].name.length) {
               if (names[names.length - 1] === tree[i].name[k]) {
-                if (typeof parameter === "function") {
-                  dev.commands[tree[i].command[k]](tree[i], parameter(tree[i].element), tree[i].name[k]);
-                } else {
-                  dev.commands[tree[i].command[k]](tree[i], parameter, tree[i].name[k]);
-                }
+                dev.commands[tree[i].command[k]](tree[i], parameter, tree[i].name[k]);
               }
               k++;
             }
@@ -369,7 +412,7 @@
           i++;
         }
       };
-      
+
       enumerable(names[j], dev.tree);
       return she;
     };
@@ -380,34 +423,34 @@
   document.addEventListener("DOMNodeRemoved", dev.updateTree);
 
   she.style = function(styleArray){
-    let styleString = "";
-    let i = 0;
-    while(i < styleArray.length){
-        styleString += styleArray[i][0] + "{";
-        for(const key in styleArray[i][1]){
-            styleString += key.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-                return "-" + Keyword.toLowerCase();
-            });
-            styleString += ":";
-            styleString += styleArray[i][1][key];
-            styleString += ";";
-        }
-        styleString += "}";
-        i++;
-    }
-
-    let j = 0;
-    while(j < document.head.children.length){
-        if(document.head.children[j].nodeName === "STYLE"){
-            document.head.children[j].innerHTML += styleString;
+    if(Array.isArray(styleArray)){
+      let styleString = "";
+      let i = 0;
+      while(i < styleArray.length){
+          styleString += styleArray[i][0] + "{";
+          for(const key in styleArray[i][1]){
+              styleString +=  dev.parseHump(key);
+              styleString += ":";
+              styleString += styleArray[i][1][key];
+              styleString += ";";
+          }
+          styleString += "}";
+          i++;
+      }
+  
+      i = 0;
+      while(i < document.head.children.length){
+        if(document.head.children[i].nodeName === "STYLE"){
+            document.head.children[i].innerHTML += styleString;
             return;
         }
-        j++;
+        i++;
+      }
+  
+      const style = document.createElement("style");
+      style.innerHTML = styleString;
+      document.head.appendChild(style);
     }
-
-    const style = document.createElement("style");
-    style.innerHTML = styleString;
-    document.head.appendChild(style);
   };
 
   she.router = function(callback){
