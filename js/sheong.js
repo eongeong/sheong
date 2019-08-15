@@ -146,14 +146,14 @@
                 }
               };
 
-              VRElement.name[i] = dev.parseHump(VRElement.name[i]);
-              if (VRElement.name[i].search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
+              const temporaryName = dev.parseHump(VRElement.name[i]);
+              if (temporaryName.search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
                 const item = getData(forCookie[1]);
                 if( dev.notNull(item) ){
-                  dev.commands[VRElement.command[i]](VRElement, eval( "item" + VRElement.name[i].replace(forCookie[1], "") ), VRElement.name[i]);
+                  dev.commands[VRElement.command[i]](VRElement, eval( "item" + temporaryName.replace(forCookie[1], "") ), VRElement.name[i]);
                 }
               }
-              if (VRElement.name[i] === forCookie[2]) {
+              if (temporaryName === forCookie[2]) {
                 dev.commands[VRElement.command[i]](VRElement, getData(forCookie[2]), VRElement.name[i]);
               }
 
@@ -216,10 +216,17 @@
   };
 
   dev.commands["she-change"] = function(VRElement, value){
-    if(Array.isArray(value)){
-      let oldStyleString = VRElement.element.getAttribute("style");      
+    if(Array.isArray(value)){     
+      let oldStyleString = VRElement.element.getAttribute("style");  
       if( dev.notNull(oldStyleString) ){
-        let i = 0;
+        let i;
+        
+        if( VRElement.element.hasAttribute("change-index") ){
+          i = parseInt(VRElement.element.getAttribute("change-index"));
+        }else{
+          i = 0;
+        }
+
         while( i < value.length ){
           let styleString = "";
           for (const key in value[i]) {
@@ -233,14 +240,18 @@
             if(i === value.length ){
               i = 0;
             }
-            dev.commands["she-style"](VRElement, value[i]);
+            dev.commands["she-style"](VRElement, value[i]);            
+            VRElement.element.setAttribute("change-index", i);
             return;
           }
           i++;
         }
+
         dev.commands["she-style"](VRElement, value[0]);
+        VRElement.element.setAttribute("change-index", 0);
       }else{
         dev.commands["she-style"](VRElement, value[0]);
+        VRElement.element.setAttribute("change-index", 0);
       }
     }
   };
@@ -275,7 +286,7 @@
           }else{
             tree[tree.length - 1].name[j] = elements[i].getAttribute(command);
           }
-
+          
           tree[tree.length - 1].command[j] = command;
 
           j++;
