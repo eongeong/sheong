@@ -65,7 +65,7 @@
   dev.commands["she-attribute"] = function (VRElement, value, name) {
     if (typeof value === "object" && !Array.isArray(value)) {
       dev.renderGuard(function () {
-        name = parseHump(name);
+        name = dev.parseHump(name);
         let isUpdateSuperiorVRElement = false;
         if(VRElement.element.hasAttribute(name)){
           const attributeData = JSON.parse(VRElement.element.getAttribute(name));
@@ -81,7 +81,12 @@
               isUpdateSuperiorVRElement = true;
           }
 
-          VRElement.element.setAttribute(attribute, value[key]);
+          if(key === "enabled" || key === "disabled" || key === "checked" || key === "selected"){
+            VRElement.element[key] = value[key];
+          }else{
+            VRElement.element.setAttribute(attribute, value[key]);
+          }
+
         }
 
         if(isUpdateSuperiorVRElement){
@@ -120,10 +125,10 @@
             fragment.appendChild(element);
           }
           VRElement.element.parentNode.replaceChild(fragment, VRElement.element);
-          dev.updateSuperiorVRElement(superiorElement);
+          dev.updateSuperiorVRElement(superiorElement);          
           dev.enumerableTree(dev.tree, function (VRElement) {
             let i = 0;
-            while (i < VRElement.name.length) {
+            while (i < VRElement.names.length) {
               const getData = function (name) {
                 if (VRElement.element.hasAttribute(name)) {
                   if (name === forCookie[1]) {
@@ -146,15 +151,15 @@
                 }
               };
 
-              const temporaryName = dev.parseHump(VRElement.name[i]);
+              const temporaryName = dev.parseHump(VRElement.names[i]);
               if (temporaryName.search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
                 const item = getData(forCookie[1]);
                 if( dev.notNull(item) ){
-                  dev.commands[VRElement.command[i]](VRElement, eval( "item" + temporaryName.replace(forCookie[1], "") ), VRElement.name[i]);
+                  dev.commands[VRElement.commands[i]](VRElement, eval( "item" + temporaryName.replace(forCookie[1], "") ), VRElement.names[i]);
                 }
               }
               if (temporaryName === forCookie[2]) {
-                dev.commands[VRElement.command[i]](VRElement, getData(forCookie[2]), VRElement.name[i]);
+                dev.commands[VRElement.commands[i]](VRElement, getData(forCookie[2]), VRElement.names[i]);
               }
 
               i++;
@@ -216,11 +221,11 @@
   };
 
   dev.commands["she-change"] = function(VRElement, value){
-    if(Array.isArray(value)){     
+    if(Array.isArray(value)){
       let oldStyleString = VRElement.element.getAttribute("style");  
       if( dev.notNull(oldStyleString) ){
-        let i;
-        
+        let i = 0;
+
         if( VRElement.element.hasAttribute("change-index") ){
           i = parseInt(VRElement.element.getAttribute("change-index"));
         }else{
@@ -235,20 +240,22 @@
             styleString += value[i][key];
             styleString += ";";
           }
+          
           if(styleString === oldStyleString){
             i++;
             if(i === value.length ){
               i = 0;
             }
-            dev.commands["she-style"](VRElement, value[i]);            
+            dev.commands["she-style"](VRElement, value[i]);
             VRElement.element.setAttribute("change-index", i);
             return;
           }
+
           i++;
         }
 
         dev.commands["she-style"](VRElement, value[0]);
-        VRElement.element.setAttribute("change-index", 0);
+        VRElement.element.setAttribute("change-index", 0);        
       }else{
         dev.commands["she-style"](VRElement, value[0]);
         VRElement.element.setAttribute("change-index", 0);
@@ -270,9 +277,9 @@
 
           if (!isHasOneCommand) {
             tree.push({
-              name: [],
+              names: [],
               element: elements[i],
-              command: [],
+              commands: [],
               children: []
             });
             if (elements[i].children.length > 0) {
@@ -282,12 +289,12 @@
           }
 
           if(command === "she-for"){
-            tree[tree.length - 1].name[j] = elements[i].getAttribute(command).split(":")[0];
+            tree[tree.length - 1].names[j] = elements[i].getAttribute(command).split(":")[0];
           }else{
-            tree[tree.length - 1].name[j] = elements[i].getAttribute(command);
+            tree[tree.length - 1].names[j] = elements[i].getAttribute(command);
           }
           
-          tree[tree.length - 1].command[j] = command;
+          tree[tree.length - 1].commands[j] = command;
 
           j++;
         }
@@ -392,9 +399,9 @@
         while (i < tree.length) {
           if (names[names.length - 1] === names[j]) {
             let k = 0;
-            while (k < tree[i].name.length) {
-              if (names[names.length - 1] === tree[i].name[k]) {
-                dev.commands[tree[i].command[k]](tree[i], parameter, tree[i].name[k]);
+            while (k < tree[i].names.length) {
+              if (names[names.length - 1] === tree[i].names[k]) {
+                dev.commands[tree[i].commands[k]](tree[i], parameter, tree[i].names[k]);
               }
               k++;
             }
@@ -402,8 +409,8 @@
 
           if (tree[i].children.length > 0) {
             let k = 0;
-            while (k < tree[i].name.length) {
-              if (elementname === tree[i].name[k]) {
+            while (k < tree[i].names.length) {
+              if (elementname === tree[i].names[k]) {
                 j++;
                 break;
               }
@@ -411,8 +418,8 @@
             }
             enumerable(names[j], tree[i].children);
             k = 0;
-            while (k < tree[i].name.length) {
-              if (elementname === tree[i].name[k]) {
+            while (k < tree[i].names.length) {
+              if (elementname === tree[i].names[k]) {
                 j--;
                 break;
               }
@@ -448,7 +455,7 @@
           styleString += "}";
           i++;
       }
-  
+
       i = 0;
       while(i < document.head.children.length){
         if(document.head.children[i].nodeName === "STYLE"){
@@ -457,7 +464,7 @@
         }
         i++;
       }
-  
+
       const style = document.createElement("style");
       style.innerHTML = styleString;
       document.head.appendChild(style);
