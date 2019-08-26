@@ -6,7 +6,7 @@
   else if(typeof exports === "object")
     exports.sheong = exports.she = factory();
   else
-  window.sheong = window.she = factory();
+    window.sheong = window.she = factory();
 })(function () {
   "use strict";
 
@@ -35,18 +35,22 @@
   };
 
   dev.commands["she-text"] = function (VRElement, value) {
-    dev.renderGuard(function () {
-      VRElement.element.textContent = value;
-      VRElement.children = [];
-    });
+    if(typeof value !== "object" || typeof value !== "function"){
+      dev.renderGuard(function () {
+        VRElement.element.textContent = value;
+        VRElement.children = [];
+      });
+    }
   };
 
   dev.commands["she-html"] = function (VRElement, value) {
-    dev.renderGuard(function () {
-      VRElement.element.innerHTML = value;
-      VRElement.children = [];
-      dev.createTree(VRElement.element.children, VRElement.children);
-    });
+    if(typeof value !== "object" || typeof value !== "function"){
+      dev.renderGuard(function () {
+        VRElement.element.innerHTML = value;
+        VRElement.children = [];
+        dev.createTree(VRElement.element.children, VRElement.children);
+      });
+    }
   };
 
   dev.commands["she-style"] = function (VRElement, value) {
@@ -62,27 +66,20 @@
     }
   };
 
-  dev.commands["she-attribute"] = function (VRElement, value, name) {
+  dev.commands["she-attribute"] = function (VRElement, value) {
     if (typeof value === "object" && !Array.isArray(value)) {
       dev.renderGuard(function () {
-        name = dev.parseHump(name);
         let isUpdateSuperiorVRElement = false;
-        if(VRElement.element.hasAttribute(name)){
-          const attributeData = JSON.parse(VRElement.element.getAttribute(name));
-          for (const key in attributeData) {
-            VRElement.element.removeAttribute( dev.parseHump(key) );
-          }
-        }
 
         for (const key in value) {
           const attribute = dev.parseHump(key);
 
           if(isUpdateSuperiorVRElement === false && attribute.indexOf("she") !== -1){
-              isUpdateSuperiorVRElement = true;
+            isUpdateSuperiorVRElement = true;
           }
 
-          if(key === "enabled" || key === "disabled" || key === "checked" || key === "selected"){
-            VRElement.element[key] = value[key];
+          if(value[key] === false){
+            VRElement.element.removeAttribute(attribute);
           }else{
             VRElement.element.setAttribute(attribute, value[key]);
           }
@@ -92,8 +89,6 @@
         if(isUpdateSuperiorVRElement){
           dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
         }
-
-        VRElement.element.setAttribute(name, JSON.stringify(value));
       });
     }
   };
