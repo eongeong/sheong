@@ -22,7 +22,8 @@
     isWatch: true,
     notNull: undefined,
     parseHump: undefined,
-    isUpdateTree: true
+    isUpdateTree: true,
+    parseStyleObject: undefined
   };
 
   dev.commands["she"] = function (VRElement, value) {
@@ -35,34 +36,23 @@
   };
 
   dev.commands["she-text"] = function (VRElement, value) {
-    if(typeof value !== "object" || typeof value !== "function"){
-      dev.renderGuard(function () {
-        VRElement.element.textContent = value;
-        VRElement.children = [];
-      });
-    }
+    dev.renderGuard(function () {
+      VRElement.element.textContent = value;
+      VRElement.children = [];
+    });
   };
 
   dev.commands["she-html"] = function (VRElement, value) {
-    if(typeof value !== "object" || typeof value !== "function"){
-      dev.renderGuard(function () {
-        VRElement.element.innerHTML = value;
-        VRElement.children = [];
-        dev.createTree(VRElement.element.children, VRElement.children);
-      });
-    }
+    dev.renderGuard(function () {
+      VRElement.element.innerHTML = value;
+      VRElement.children = [];
+      dev.createTree(VRElement.element.children, VRElement.children);
+    });
   };
 
   dev.commands["she-style"] = function (VRElement, value) {
     if (typeof value === "object" && !Array.isArray(value)) {
-      let styleString = "";
-      for (const key in value) {
-        styleString +=  dev.parseHump(key);
-        styleString += ":";
-        styleString += value[key];
-        styleString += ";";
-      }
-      VRElement.element.setAttribute("style", styleString);
+      VRElement.element.setAttribute("style", dev.parseStyleObject(value));
     }
   };
 
@@ -123,7 +113,9 @@
           dev.updateSuperiorVRElement(superiorElement);          
           dev.enumerableTree(dev.tree, function (VRElement) {
             let i = 0;
-            while (i < VRElement.names.length) {
+            const count = VRElement.names.length;
+            while (i < count) {
+
               const getData = function (name) {
                 if (VRElement.element.hasAttribute(name)) {
                   if (name === forCookie[1]) {
@@ -176,7 +168,7 @@
               const renderer = function(parent, value){
 
                 let i = 0;
-                while( i < value.length && dev.notNull(value[i]) ){
+                while( dev.notNull(value[i]) ){
                   const element = document.createElement(value[i][0]);
 
                   if( dev.notNull(value[i][1]) ){
@@ -227,18 +219,11 @@
           i = 0;
         }
 
-        while( i < value.length ){
-          let styleString = "";
-          for (const key in value[i]) {
-            styleString +=  dev.parseHump(key);
-            styleString += ":";
-            styleString += value[i][key];
-            styleString += ";";
-          }
-          
-          if(styleString === oldStyleString){
+        const count = value.length;
+        while( i < count ){
+          if(dev.parseStyleObject(value[i]) === oldStyleString){
             i++;
-            if(i === value.length ){
+            if(i === count ){
               i = 0;
             }
             dev.commands["she-style"](VRElement, value[i]);
@@ -260,7 +245,8 @@
 
   dev.createTree = function (elements, tree) {
     let i = 0;
-    while (i < elements.length) {
+    const count = elements.length;
+    while (i < count) {
       let isHasCommand = false,
         j = 0,
         isHasOneCommand = false;
@@ -317,7 +303,8 @@
   dev.enumerableTree = function (tree, callback) {
     const enumerable = function (tree) {
       let i = 0;
-      while (i < tree.length) {
+      const count = tree.length;
+      while (i < count) {
         if (callback(tree[i]) === true) {
           return;
         }
@@ -383,18 +370,31 @@
     });
   };
 
+  dev.parseStyleObject = function(styleObject){
+    const temporary = [];
+    for (const key in styleObject) {
+      temporary.push(dev.parseHump(key));
+      temporary.push(":");
+      temporary.push(styleObject[key]);
+      temporary.push(";");
+    }
+    return temporary.join("");
+  };
+
   const she = function (name) {
     const names = name.trim().split(new RegExp("\\s+"));
 
     return function (parameter) {
       let j = 0;
 
-      const enumerable = function (elementname, tree) {
+      const enumerable = function (VRElementName, tree) {
         let i = 0;
-        while (i < tree.length) {
+        const count = tree.length;
+        while (i < count) {
           if (names[names.length - 1] === names[j]) {
             let k = 0;
-            while (k < tree[i].names.length) {
+            const number = tree[i].names.length;
+            while (k < number) {
               if (names[names.length - 1] === tree[i].names[k]) {
                 dev.commands[tree[i].commands[k]](tree[i], parameter, tree[i].names[k]);
               }
@@ -405,7 +405,7 @@
           if (tree[i].children.length > 0) {
             let k = 0;
             while (k < tree[i].names.length) {
-              if (elementname === tree[i].names[k]) {
+              if (VRElementName === tree[i].names[k]) {
                 j++;
                 break;
               }
@@ -414,7 +414,7 @@
             enumerable(names[j], tree[i].children);
             k = 0;
             while (k < tree[i].names.length) {
-              if (elementname === tree[i].names[k]) {
+              if (VRElementName === tree[i].names[k]) {
                 j--;
                 break;
               }
@@ -437,24 +437,25 @@
 
   she.style = function(styleArray){
     if(Array.isArray(styleArray)){
-      let styleString = "";
-      let i = 0;
-      while(i < styleArray.length){
-          styleString += styleArray[i][0] + "{";
-          for(const key in styleArray[i][1]){
-              styleString +=  dev.parseHump(key);
-              styleString += ":";
-              styleString += styleArray[i][1][key];
-              styleString += ";";
-          }
-          styleString += "}";
+
+      const temporary = [];
+      let i = 0, count = styleArray.length;
+      while(i < count){
+          temporary.push(styleArray[i][0]);
+          temporary.push("{");
+          temporary.push(dev.parseStyleObject(styleArray[i][1]));
+          temporary.push("}");
           i++;
       }
 
+      const styleString = temporary.join("");
+
       i = 0;
-      while(i < document.head.children.length){
-        if(document.head.children[i].nodeName === "STYLE"){
-            document.head.children[i].innerHTML += styleString;
+      const headChildren = document.head.children;
+      count = headChildren.length;
+      while(i < count){
+        if(headChildren[i].nodeName === "STYLE"){
+            headChildren[i].innerHTML += styleString;
             return;
         }
         i++;
