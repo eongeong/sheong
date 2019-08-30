@@ -88,43 +88,47 @@
       dev.renderGuard(function () {
         const superiorElement = dev.getSuperiorElement(VRElement);
         if ( superiorElement !== null ) {
+          const VRElementElement = VRElement.element;          
           const fragment = document.createDocumentFragment();
-          const forCookie = VRElement.element.getAttribute("she-for").split(":");
+          const forCookie = VRElementElement.getAttribute("she-for").split(":");
           forCookie[1] = dev.parseHump(forCookie[1]);
           forCookie[2] = dev.parseHump(forCookie[2]);
 
           while(
-            VRElement.element.nextElementSibling !== null
+            VRElementElement.nextElementSibling !== null
             &&
-            VRElement.element.nextElementSibling.hasAttribute("she-for")
+            VRElementElement.nextElementSibling.hasAttribute("she-for")
             &&
-            VRElement.element.nextElementSibling.getAttribute("she-for").indexOf(name) !== -1
+            VRElementElement.nextElementSibling.getAttribute("she-for").indexOf(name) !== -1
           ){
-            VRElement.element.parentNode.removeChild(VRElement.element.nextElementSibling);
+            VRElementElement.parentNode.removeChild(VRElementElement.nextElementSibling);
           }
 
           for (const key in value) {
-            const element = VRElement.element.cloneNode(true);
+            const element = VRElementElement.cloneNode(true);
             element.setAttribute(forCookie[1], JSON.stringify(value[key]));
             element.setAttribute(forCookie[2], key);
             fragment.appendChild(element);
           }
-          VRElement.element.parentNode.replaceChild(fragment, VRElement.element);
+          VRElementElement.parentNode.replaceChild(fragment, VRElementElement);
           dev.updateSuperiorVRElement(superiorElement);          
           dev.enumerableTree(dev.tree, function (VRElement) {
+            const VRElementElement = VRElement.element;
+            const VRElementNames = VRElement.names;
+            const VRElementCommands = VRElement.commands;
             let i = 0;
-            const count = VRElement.names.length;
+            const count = VRElementNames.length;
             while (i < count) {
 
               const getData = function (name) {
-                if (VRElement.element.hasAttribute(name)) {
+                if (VRElementElement.hasAttribute(name)) {
                   if (name === forCookie[1]) {
-                    return JSON.parse(VRElement.element.getAttribute( forCookie[1] ));
+                    return JSON.parse(VRElementElement.getAttribute( forCookie[1] ));
                   } else {
-                    return VRElement.element.getAttribute( forCookie[2] );
+                    return VRElementElement.getAttribute( forCookie[2] );
                   }
                 } else {
-                  let element = VRElement.element.parentNode;
+                  let element = VRElementElement.parentNode;
                   while (element.tagName !== "BODY") {
                     if (element.hasAttribute("she-for")) {
                       if (name === forCookie[1]) {
@@ -138,15 +142,15 @@
                 }
               };
 
-              const temporaryName = dev.parseHump(VRElement.names[i]);
+              const temporaryName = dev.parseHump(VRElementNames[i]);
               if (temporaryName.search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
                 const item = getData(forCookie[1]);
                 if( dev.notNull(item) ){
-                  dev.commands[VRElement.commands[i]](VRElement, eval( "item" + temporaryName.replace(forCookie[1], "") ), VRElement.names[i]);
+                  dev.commands[VRElementCommands[i]](VRElement, eval( "item" + temporaryName.replace(forCookie[1], "") ), VRElementNames[i]);
                 }
               }
               if (temporaryName === forCookie[2]) {
-                dev.commands[VRElement.commands[i]](VRElement, getData(forCookie[2]), VRElement.names[i]);
+                dev.commands[VRElementCommands[i]](VRElement, getData(forCookie[2]), VRElementNames[i]);
               }
 
               i++;
@@ -209,12 +213,13 @@
 
   dev.commands["she-change"] = function(VRElement, value){
     if(Array.isArray(value)){
-      let oldStyleString = VRElement.element.getAttribute("style");  
+      const VRElementElement = VRElement.element;
+      let oldStyleString = VRElementElement.getAttribute("style");  
       if( dev.notNull(oldStyleString) ){
         let i = 0;
 
-        if( VRElement.element.hasAttribute("change-index") ){
-          i = parseInt(VRElement.element.getAttribute("change-index"));
+        if( VRElementElement.hasAttribute("change-index") ){
+          i = parseInt(VRElementElement.getAttribute("change-index"));
         }else{
           i = 0;
         }
@@ -227,7 +232,7 @@
               i = 0;
             }
             dev.commands["she-style"](VRElement, value[i]);
-            VRElement.element.setAttribute("change-index", i);
+            VRElementElement.setAttribute("change-index", i);
             return;
           }
 
@@ -235,10 +240,10 @@
         }
 
         dev.commands["she-style"](VRElement, value[0]);
-        VRElement.element.setAttribute("change-index", 0);        
+        VRElementElement.setAttribute("change-index", 0);        
       }else{
         dev.commands["she-style"](VRElement, value[0]);
-        VRElement.element.setAttribute("change-index", 0);
+        VRElementElement.setAttribute("change-index", 0);
       }
     }
   };
@@ -269,13 +274,14 @@
             isHasOneCommand = true;
           }
 
+          const presentNode = tree[tree.length - 1];
           if(command === "she-for"){
-            tree[tree.length - 1].names[j] = elements[i].getAttribute(command).split(":")[0];
+            presentNode.names[j] = elements[i].getAttribute(command).split(":")[0];
           }else{
-            tree[tree.length - 1].names[j] = elements[i].getAttribute(command);
+            presentNode.names[j] = elements[i].getAttribute(command);
           }
           
-          tree[tree.length - 1].commands[j] = command;
+          presentNode.commands[j] = command;
 
           j++;
         }
@@ -383,6 +389,7 @@
 
   const she = function (name) {
     const names = name.trim().split(new RegExp("\\s+"));
+    const targetName = names[names.length - 1];
 
     return function (parameter) {
       let j = 0;
@@ -391,11 +398,11 @@
         let i = 0;
         const count = tree.length;
         while (i < count) {
-          if (names[names.length - 1] === names[j]) {
+          if (targetName === names[j]) {
             let k = 0;
             const number = tree[i].names.length;
             while (k < number) {
-              if (names[names.length - 1] === tree[i].names[k]) {
+              if (targetName === tree[i].names[k]) {
                 dev.commands[tree[i].commands[k]](tree[i], parameter, tree[i].names[k]);
               }
               k++;
@@ -455,7 +462,27 @@
       count = headChildren.length;
       while(i < count){
         if(headChildren[i].nodeName === "STYLE"){
-            headChildren[i].innerHTML += styleString;
+            const regexp = styleString.replace(new RegExp(":(.+?);|\\.|\\[|\\]|\\{|\\}|\\*|\\+", "g"), function(Keyword){
+              switch(Keyword){
+                case ".": return "\\.";
+                case "[": return "\\[";
+                case "]": return "\\]";
+                case "{": return "\\{";
+                case "}": return "\\}";
+                case "*": return "\\*";
+                case "+": return "\\+";
+              }
+              const temporary = [];
+              temporary.push(":");
+              temporary.push("(.+?)");
+              temporary.push(";");
+              return temporary.join("");
+            });
+            if(headChildren[i].innerHTML.search(new RegExp(regexp)) === -1){
+              headChildren[i].innerHTML = [headChildren[i].innerHTML, styleString].join("");
+            }else{
+              headChildren[i].innerHTML = headChildren[i].innerHTML.replace(new RegExp(regexp), styleString);
+            }
             return;
         }
         i++;
