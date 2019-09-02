@@ -68,7 +68,9 @@
             isUpdateSuperiorVRElement = true;
           }
 
-          if(value[key] === false){
+          if(key === "value"){
+            VRElement.element.value = value[key];
+          }else if(value[key] === false){
             VRElement.element.removeAttribute(attribute);
           }else{
             VRElement.element.setAttribute(attribute, value[key]);
