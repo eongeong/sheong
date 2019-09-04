@@ -35,19 +35,25 @@
     }
   };
 
-  dev.commands["she-text"] = function (VRElement, value) {
-    dev.renderGuard(function () {
-      VRElement.element.textContent = value;
-      VRElement.children = [];
-    });
-  };
-
-  dev.commands["she-html"] = function (VRElement, value) {
-    dev.renderGuard(function () {
-      VRElement.element.innerHTML = value;
-      VRElement.children = [];
-      dev.createTree(VRElement.element.children, VRElement.children);
-    });
+  dev.commands["she-show"] = function (VRElement, value) {
+    if(!dev.notNull(value)){
+      value = "";
+    }
+    const element = VRElement.element;
+    if(element.nodeName === "INPUT"){
+      element.value = value;
+    }else{
+      dev.renderGuard(function () {
+        if(value.search(new RegExp("</(.+?)>")) === -1){
+          element.textContent = value.toString();
+          VRElement.children = [];          
+        }else{
+          element.innerHTML = value.toString();
+          VRElement.children = [];
+          dev.createTree(element.children, VRElement.children);
+        }  
+      });
+    }
   };
 
   dev.commands["she-style"] = function (VRElement, value) {
@@ -67,13 +73,16 @@
           if(isUpdateSuperiorVRElement === false && attribute.indexOf("she") !== -1){
             isUpdateSuperiorVRElement = true;
           }
-
-          if(key === "value"){
-            VRElement.element.value = value[key];
-          }else if(value[key] === false){
-            VRElement.element.removeAttribute(attribute);
-          }else{
-            VRElement.element.setAttribute(attribute, value[key]);
+          
+          switch(value[key]){
+            case "":
+              VRElement.element.value = "";
+              break;
+            case false:
+              VRElement.element.removeAttribute(attribute);
+              break;
+            default:
+              VRElement.element.setAttribute(attribute, value[key]);
           }
 
         }
@@ -277,12 +286,7 @@
           }
 
           const presentNode = tree[tree.length - 1];
-          if(command === "she-for"){
-            presentNode.names[j] = elements[i].getAttribute(command).split(":")[0];
-          }else{
-            presentNode.names[j] = elements[i].getAttribute(command);
-          }
-          
+          presentNode.names[j] = elements[i].getAttribute(command).split(":")[0];          
           presentNode.commands[j] = command;
 
           j++;
@@ -367,7 +371,6 @@
       case undefined: return false;
       case null: return false;
       case "": return false;
-      case false: return false;
       default: return true;
     }
   };
