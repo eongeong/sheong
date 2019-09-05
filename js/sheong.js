@@ -35,24 +35,18 @@
     }
   };
 
-  dev.commands["she-show"] = function (VRElement, value) {
+  dev.commands["she-content"] = function (VRElement, value) {
     if(!dev.notNull(value)){
       value = "";
     }
     const element = VRElement.element;
-    if(element.nodeName === "INPUT"){
-      element.value = value;
+    if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
+      element.textContent = value.toString();
+      VRElement.children = [];          
     }else{
-      dev.renderGuard(function () {
-        if(value.search(new RegExp("</(.+?)>")) === -1){
-          element.textContent = value.toString();
-          VRElement.children = [];          
-        }else{
-          element.innerHTML = value.toString();
-          VRElement.children = [];
-          dev.createTree(element.children, VRElement.children);
-        }  
-      });
+      element.innerHTML = value.toString();
+      VRElement.children = [];
+      dev.createTree(element.children, VRElement.children);
     }
   };
 
@@ -101,7 +95,7 @@
         if ( superiorElement !== null ) {
           const VRElementElement = VRElement.element;          
           const fragment = document.createDocumentFragment();
-          const forCookie = VRElementElement.getAttribute("she-for").split(":");
+          const forCookie = VRElementElement.getAttribute("she-for").trim().split(new RegExp("\\s+"));
           forCookie[1] = dev.parseHump(forCookie[1]);
           forCookie[2] = dev.parseHump(forCookie[2]);
 
@@ -122,7 +116,7 @@
             fragment.appendChild(element);
           }
           VRElementElement.parentNode.replaceChild(fragment, VRElementElement);
-          dev.updateSuperiorVRElement(superiorElement);          
+          dev.updateSuperiorVRElement(superiorElement);
           dev.enumerableTree(dev.tree, function (VRElement) {
             const VRElementElement = VRElement.element;
             const VRElementNames = VRElement.names;
@@ -154,10 +148,27 @@
               };
 
               const temporaryName = dev.parseHump(VRElementNames[i]);
-              if (temporaryName.search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]", "g") ) !== -1) {
+              if (temporaryName.search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]|\{(.*?)" + forCookie[1] + "(.*?)\}", "g") ) !== -1) {
                 const item = getData(forCookie[1]);
                 if( dev.notNull(item) ){
-                  dev.commands[VRElementCommands[i]](VRElement, eval( "item" + temporaryName.replace(forCookie[1], "") ), VRElementNames[i]);
+                  if(temporaryName.indexOf("{") === -1){
+                    dev.commands[VRElementCommands[i]](VRElement, eval( temporaryName.replace(forCookie[1], "item") ), VRElementNames[i]);
+                  }else{
+                    const temporaryArray = temporaryName.replace(forCookie[1], "item").replace(new RegExp("\{|\}", "g"), "").split(",");
+                    const value = {};
+                    let j = 0;
+                    while(j < temporaryArray.length){
+                      const keyValue = temporaryArray[j].split(":");
+                      if(keyValue[1].indexOf(forCookie[1]) !== -1){
+                        value[keyValue[0]] = eval( keyValue[1].replace(forCookie[1], "item") );
+                      }else{
+                        value[keyValue[0]] = keyValue[1];
+                      }
+                      j++;
+                    }
+
+                    dev.commands[VRElementCommands[i]](VRElement, value, VRElementNames[i]);
+                  }
                 }
               }
               if (temporaryName === forCookie[2]) {
@@ -286,7 +297,7 @@
           }
 
           const presentNode = tree[tree.length - 1];
-          presentNode.names[j] = elements[i].getAttribute(command).split(":")[0];          
+          presentNode.names[j] = elements[i].getAttribute(command).trim().split(new RegExp("\\s+"))[0];
           presentNode.commands[j] = command;
 
           j++;
@@ -370,13 +381,12 @@
     switch(value){
       case undefined: return false;
       case null: return false;
-      case "": return false;
       default: return true;
     }
   };
 
   dev.parseHump = function(value){
-    return value.replace(new RegExp("[A-Z]", "g"), function (Keyword) {
+    return value.replace(new RegExp("\\s+", "g"), "").replace(new RegExp("[A-Z]", "g"), function (Keyword) {
       return "-" + Keyword.toLowerCase();
     });
   };
