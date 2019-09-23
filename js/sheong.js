@@ -1,520 +1,527 @@
 (function (factory) {
   if(typeof exports === "object" && typeof module === "object")
-    module.exports = factory();
+      module.exports = factory();
   else if(typeof define === "function" && define.amd)
-    define([], factory);
+      define([], factory);
   else if(typeof exports === "object")
-    exports.sheong = exports.she = factory();
+      exports.she = factory();
   else
-    window.sheong = window.she = factory();
+      window.she = factory();
 })(function () {
   "use strict";
 
   const dev = {
-    tree: [],
-    commands: {},
-    createTree: undefined,
-    updateTree: undefined,
-    enumerableTree: undefined,
-    getSuperiorElement: undefined,
-    updateSuperiorVRElement: undefined,
-    renderGuard: undefined,
-    isWatch: true,
-    notNull: undefined,
-    parseHump: undefined,
-    isUpdateTree: true,
-    parseStyleObject: undefined
+      tree: [],
+      commands: {},
+      createTree: undefined,
+      enumerableTree: undefined,
+      getSuperiorElement: undefined,
+      getSuperiorVRElement: undefined,
+      updateSuperiorVRElement: undefined,
+      isNull: undefined,
+      parseHump: undefined,
+      parseStyleObject: undefined        
   };
 
   dev.commands["she"] = function (VRElement, value) {
-    if( typeof value === "function" && value(VRElement.element) === false ){
-      dev.renderGuard(function () {
-        VRElement.element.removeAttribute("she");
-        dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-      });
-    }
+      if( typeof value === "function" && value(VRElement.element) === false ) {
+          VRElement.element.removeAttribute("she");
+          dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+      }
   };
 
   dev.commands["she-content"] = function (VRElement, value) {
-    if(!dev.notNull(value)){
-      value = "";
-    }
-    const element = VRElement.element;
-    if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
-      element.textContent = value.toString();
-      VRElement.children = [];          
-    }else{
-      element.innerHTML = value.toString();
-      VRElement.children = [];
-      dev.createTree(element.children, VRElement.children);
-    }
+      const type = typeof value;
+      if(value !== undefined && type !== "object" && type !== "function"){
+          if(type !== "string"){
+              value = value.toString();    
+          }
+          if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
+              VRElement.element.textContent = value;
+              VRElement.children = [];
+          } else {
+              VRElement.element.innerHTML = value;
+              VRElement.children = [];
+              dev.createTree(VRElement.element.children, VRElement.children);
+          }
+      }
   };
 
   dev.commands["she-style"] = function (VRElement, value) {
-    if (typeof value === "object" && !Array.isArray(value)) {
-      VRElement.element.setAttribute("style", dev.parseStyleObject(value));
-    }
+      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+          VRElement.element.setAttribute("style", dev.parseStyleObject(value));
+      }
   };
 
   dev.commands["she-attribute"] = function (VRElement, value) {
-    if (typeof value === "object" && !Array.isArray(value)) {
-      dev.renderGuard(function () {
-        let isUpdateSuperiorVRElement = false;
+      if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+          let isUpdateSuperiorVRElement = false;
 
-        for (const key in value) {
-          const attribute = dev.parseHump(key);
+          for (const key in value) {
+              const attributeName = dev.parseHump(key);
 
-          if(isUpdateSuperiorVRElement === false && attribute.indexOf("she") !== -1){
-            isUpdateSuperiorVRElement = true;
+              if(isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1){
+                  isUpdateSuperiorVRElement = true;
+              }
+
+              switch(value[key]){
+                  case "":
+                      VRElement.element.attributeName = "";
+                      break;
+                  case false:
+                      VRElement.element.removeAttribute(attributeName);
+                      break;
+                  default:
+                      VRElement.element.setAttribute(attributeName, value[key]);
+              }
           }
-          
-          switch(value[key]){
-            case "":
-              VRElement.element.value = "";
-              break;
-            case false:
-              VRElement.element.removeAttribute(attribute);
-              break;
-            default:
-              VRElement.element.setAttribute(attribute, value[key]);
+
+          if(isUpdateSuperiorVRElement){
+              dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
           }
-
-        }
-
-        if(isUpdateSuperiorVRElement){
-          dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-        }
-      });
-    }
+      }
   };
 
   dev.commands["she-for"] = function (VRElement, value, name) {
-    if (typeof value === "object") {
-      dev.renderGuard(function () {
-        const superiorElement = dev.getSuperiorElement(VRElement);
-        if ( superiorElement !== null ) {
-          const VRElementElement = VRElement.element;          
-          const fragment = document.createDocumentFragment();
-          const forCookie = VRElementElement.getAttribute("she-for").trim().split(new RegExp("\\s+"));
-          forCookie[1] = dev.parseHump(forCookie[1]);
-          forCookie[2] = dev.parseHump(forCookie[2]);
+      if (value !== null && typeof value === "object") {
+          const superiorElement = dev.getSuperiorElement(VRElement);
+          if (superiorElement !== null) {
+              const VRElementElement = VRElement.element;
+              const VRElementElementParentNode = VRElementElement.parentNode;
+              const fragment = document.createDocumentFragment();
+              const forCookie = VRElementElement.getAttribute("she-for").trim().split(new RegExp("\\s+"));
+              const forCookie_1 = dev.parseHump(forCookie[1]);
+              const forCookie_2 = dev.parseHump(forCookie[2]);
 
-          while(
-            VRElementElement.nextElementSibling !== null
-            &&
-            VRElementElement.nextElementSibling.hasAttribute("she-for")
-            &&
-            VRElementElement.nextElementSibling.getAttribute("she-for").indexOf(name) !== -1
-          ){
-            VRElementElement.parentNode.removeChild(VRElementElement.nextElementSibling);
-          }
+              while(
+                  VRElementElement.nextElementSibling !== null
+                  &&
+                  VRElementElement.nextElementSibling.hasAttribute("she-for")
+                  &&
+                  VRElementElement.nextElementSibling.getAttribute("she-for").indexOf(name) !== -1
+              ){
+                  VRElementElementParentNode.removeChild(VRElementElement.nextElementSibling);
+              }
 
-          for (const key in value) {
-            const element = VRElementElement.cloneNode(true);
-            element.setAttribute(forCookie[1], JSON.stringify(value[key]));
-            element.setAttribute(forCookie[2], key);
-            fragment.appendChild(element);
-          }
-          VRElementElement.parentNode.replaceChild(fragment, VRElementElement);
-          dev.updateSuperiorVRElement(superiorElement);
-          dev.enumerableTree(dev.tree, function (VRElement) {
-            const VRElementElement = VRElement.element;
-            const VRElementNames = VRElement.names;
-            const VRElementCommands = VRElement.commands;
-            let i = 0;
-            const count = VRElementNames.length;
-            while (i < count) {
+              for (const key in value) {
+                  const cloneElement = VRElementElement.cloneNode(true);
+                  cloneElement.setAttribute(forCookie_1, JSON.stringify(value[key]));
+                  cloneElement.setAttribute(forCookie_2, key);
+                  fragment.appendChild(cloneElement);
+              }
 
-              const getData = function (name) {
-                if (VRElementElement.hasAttribute(name)) {
-                  if (name === forCookie[1]) {
-                    return JSON.parse(VRElementElement.getAttribute( forCookie[1] ));
-                  } else {
-                    return VRElementElement.getAttribute( forCookie[2] );
-                  }
-                } else {
-                  let element = VRElementElement.parentNode;
-                  while (element.tagName !== "BODY") {
-                    if (element.hasAttribute("she-for")) {
-                      if (name === forCookie[1]) {
-                        return JSON.parse(element.getAttribute( forCookie[1] ));
+              VRElementElementParentNode.replaceChild(fragment, VRElementElement);
+              dev.updateSuperiorVRElement(superiorElement);
+              const superiorNode = dev.getSuperiorVRElement(superiorElement).children;
+
+              const getData = function (VRElementElement, name) {
+                  if (VRElementElement.hasAttribute(name)) {
+                      if (name === forCookie_1) {
+                          return JSON.parse(VRElementElement.getAttribute( forCookie_1 ));
                       } else {
-                        return element.getAttribute( forCookie[2] );
+                          return VRElementElement.getAttribute( forCookie_2 );
                       }
-                    }
-                    element = element.parentNode;
+                  } else {
+                      let element = VRElementElement.parentNode;
+                      while (element.nodeName !== "BODY") {
+                          if (element.hasAttribute("she-for")) {
+                              if (name === forCookie_1) {
+                                  return JSON.parse(element.getAttribute( forCookie_1 ));
+                              } else {
+                                  return element.getAttribute( forCookie_2 );
+                              }
+                          }
+                          element = element.parentNode;
+                      }
                   }
-                }
               };
 
-              const temporaryName = dev.parseHump(VRElementNames[i]);
-              if (temporaryName.search( new RegExp("^" + forCookie[1] + "$|^" + forCookie[1] + "[\\.\\[]|\{(.*?)" + forCookie[1] + "(.*?)\}", "g") ) !== -1) {
-                const item = getData(forCookie[1]);
-                if( dev.notNull(item) ){
-                  if(temporaryName.indexOf("{") === -1){
-                    dev.commands[VRElementCommands[i]](VRElement, eval( temporaryName.replace(forCookie[1], "item") ), VRElementNames[i]);
-                  }else{
-                    const temporaryArray = temporaryName.replace(forCookie[1], "item").replace(new RegExp("\{|\}", "g"), "").split(",");
-                    const value = {};
-                    let j = 0;
-                    while(j < temporaryArray.length){
-                      const keyValue = temporaryArray[j].split(":");
-                      if(keyValue[1].indexOf(forCookie[1]) !== -1){
-                        value[keyValue[0]] = eval( keyValue[1].replace(forCookie[1], "item") );
-                      }else{
-                        value[keyValue[0]] = keyValue[1];
+              dev.enumerableTree(superiorNode, function (VRElement) {
+                  const VRElementElement = VRElement.element;
+                  const VRElementNames = VRElement.names;
+                  const VRElementCommands = VRElement.commands;
+                  const VRElementNamesLength = VRElementNames.length;
+                  let i = 0;
+                  while (i < VRElementNamesLength) {
+                      const temporaryName = VRElementNames[i];
+                      const command = VRElementCommands[i];
+                      if (dev.parseHump(temporaryName).search( new RegExp(["^", forCookie_1, "$|^", forCookie_1, "[\\.\\[]|\\{(.+?):", forCookie_1, "(.*?)\\}"].join("")) ) !== -1) {
+                          const item = getData(VRElementElement, forCookie_1);
+                          if (!dev.isNull(item)) {
+                              if(temporaryName.indexOf("{") === -1){
+                                  dev.commands[command](VRElement, eval( temporaryName.replace(forCookie[1], "item") ), temporaryName);
+                              } else {
+                                  const temporaryArray = temporaryName.replace(forCookie[1], "item").replace(new RegExp("\\{|\\}", "g"), "").split(",");
+                                  const temporaryArrayLength = temporaryArray.length;
+                                  const value = {};
+                                  let j = 0;
+                                  while (j < temporaryArrayLength) {
+                                      const keyvalue = temporaryArray[j].split(":");
+                                      value[keyvalue[0]] = eval( keyvalue[1] );
+                                      j++;
+                                  }
+                                  dev.commands[command](VRElement, value, temporaryName);
+                              } 
+                          }
                       }
-                      j++;
-                    }
+                      if (temporaryName === forCookie_2) {
+                          dev.commands[command](VRElement, getData(VRElementElement, forCookie_2), temporaryName);
+                      }
 
-                    dev.commands[VRElementCommands[i]](VRElement, value, VRElementNames[i]);
+                      i++;
                   }
-                }
-              }
-              if (temporaryName === forCookie[2]) {
-                dev.commands[VRElementCommands[i]](VRElement, getData(forCookie[2]), VRElementNames[i]);
-              }
+              });
 
-              i++;
-            }
-          });
-        }
-      });
-    }
+          }
+      }
   };
 
-  dev.commands["she-render"] = function (VRElement, value){
-      if(Array.isArray(value)){
-          dev.renderGuard(function () {
-              VRElement.element.textContent = "";
-              VRElement.children = [];
-              let isUpdateSuperiorVRElement = false;
-              const fragment = document.createDocumentFragment();
+  dev.commands["she-render"] = function (VRElement, value) {
+      if (Array.isArray(value)) {
+          VRElement.element.textContent = "";
+          VRElement.children = [];
+          let isUpdateSuperiorVRElement = false;
+          const fragment = document.createDocumentFragment();
+          const renderer = function (parent, value) {
+              let i = 0;
+              while ( !dev.isNull(value[i]) ) {
+                  const elementMap = value[i];
+                  const element = document.createElement(elementMap[0]);
 
-              const renderer = function(parent, value){
-
-                let i = 0;
-                while( dev.notNull(value[i]) ){
-                  const element = document.createElement(value[i][0]);
-
-                  if( dev.notNull(value[i][1]) ){
-                    for(const attribute in value[i][1]){
-                      const attributeName = dev.parseHump(attribute);
-
-                      if(isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1){
-                          isUpdateSuperiorVRElement = true;
+                  if ( !dev.isNull(elementMap[1]) ) {
+                      for (const attribute in elementMap[1]) {
+                          const attributeName = dev.parseHump(attribute);
+                          if (isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1) {
+                              isUpdateSuperiorVRElement = true;
+                          }
+                          element.setAttribute(attributeName, elementMap[1][attribute]);
                       }
-
-                      element.setAttribute(attributeName, value[i][1][attribute]);
-                    }
                   }
 
-                  if( dev.notNull(value[i][2]) ){
-                    if(typeof value[i][2][0] === "string"){
-                      element.textContent = value[i][2][0];
-                    }else{
-                      renderer(element, value[i][2]);
-                    }
+                  if ( !dev.isNull(elementMap[2]) ) {
+                      if (typeof elementMap[2][0] === "string") {
+                          element.textContent = elementMap[2][0];
+                      } else {
+                          renderer(element, elementMap[2]);
+                      }
                   }
 
-                  parent.appendChild(element);
+                  parent.appendChild(element);                    
 
                   i++;
-                }
               }
-              renderer(fragment, value);
+          };
 
-              VRElement.element.appendChild(fragment);
-
-              if(isUpdateSuperiorVRElement){
-                  dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-              }
-          });
+          renderer(fragment, value);
+          VRElement.element.appendChild(fragment);
+          if (isUpdateSuperiorVRElement) {
+              dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+          }
       }
   };
 
-  dev.commands["she-change"] = function(VRElement, value){
-    if(Array.isArray(value)){
-      const VRElementElement = VRElement.element;
-      let oldStyleString = VRElementElement.getAttribute("style");  
-      if( dev.notNull(oldStyleString) ){
-        let i = 0;
+  dev.commands["she-change"] = function (VRElement, value) {
+      if (Array.isArray(value)) {
+          const VRElementElement = VRElement.element;
+          let oldStyleString = VRElementElement.getAttribute("style");
+          if ( !dev.isNull(oldStyleString) ) {
+              let i = 0;
 
-        if( VRElementElement.hasAttribute("change-index") ){
-          i = parseInt(VRElementElement.getAttribute("change-index"));
-        }else{
-          i = 0;
-        }
+              if ( VRElementElement.hasAttribute("change-index") ) {
+                  i = parseInt(VRElementElement.getAttribute("change-index"));
+              } else {
+                  i = 0;
+              }
 
-        const count = value.length;
-        while( i < count ){
-          if(dev.parseStyleObject(value[i]) === oldStyleString){
-            i++;
-            if(i === count ){
-              i = 0;
-            }
-            dev.commands["she-style"](VRElement, value[i]);
-            VRElementElement.setAttribute("change-index", i);
-            return;
+              const valueLength = value.length;
+              while (i < valueLength) {
+                  if (dev.parseStyleObject(value[i]) === oldStyleString) {
+                      i++;
+                      if (i === valueLength) {
+                          i = 0;
+                      }
+                      dev.commands["she-style"](VRElement, value[i]);
+                      VRElementElement.setAttribute("change-index", i);
+                      return;
+                  }
+
+                  i++;
+              }
+
+              dev.commands["she-style"](VRElement, value[0]);
+              VRElementElement.setAttribute("change-index", 0);
+          } else {
+              dev.commands["she-style"](VRElement, value[0]);
+              VRElementElement.setAttribute("change-index", 0);
           }
-
-          i++;
-        }
-
-        dev.commands["she-style"](VRElement, value[0]);
-        VRElementElement.setAttribute("change-index", 0);        
-      }else{
-        dev.commands["she-style"](VRElement, value[0]);
-        VRElementElement.setAttribute("change-index", 0);
       }
-    }
+  };
+
+  dev.commands["she-event"] = function (VRElement, value) {
+      if(value !== null && typeof value === "object" && !Array.isArray(value) && value.length === 2 && typeof value[0] === "string" && typeof value[1] === "function"){
+          const VRElementElement = VRElement.element;
+          VRElementElement.removeEventListener(value[0], value[1]);
+          VRElementElement.addEventListener(value[0], value[1]);
+          VRElementElement.removeAttribute("she-event");
+          dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+      }
   };
 
   dev.createTree = function (elements, tree) {
-    let i = 0;
-    const count = elements.length;
-    while (i < count) {
-      let isHasCommand = false,
-        j = 0,
-        isHasOneCommand = false;
-      for (const command in dev.commands) {
-        if (elements[i].hasAttribute(command)) {
-          if (!isHasCommand) {
-            isHasCommand = true;
-          }
-
-          if (!isHasOneCommand) {
-            tree.push({
-              names: [],
-              element: elements[i],
-              commands: [],
-              children: []
-            });
-            if (elements[i].children.length > 0) {
-              dev.createTree(elements[i].children, tree[tree.length - 1].children);
-            }
-            isHasOneCommand = true;
-          }
-
-          const presentNode = tree[tree.length - 1];
-          presentNode.names[j] = elements[i].getAttribute(command).trim().split(new RegExp("\\s+"))[0];
-          presentNode.commands[j] = command;
-
-          j++;
-        }
-      }
-
-      if (!isHasCommand && elements[i].children.length > 0) {
-        dev.createTree(elements[i].children, tree);
-      }
-      i++;
-    }
-  };
-
-  dev.updateTree = function () {
-    if (dev.isWatch && dev.isUpdateTree) {
-      dev.isUpdateTree = false;
-      setTimeout(function(){
-        dev.isUpdateTree = true;
-        const tree = [];
-        dev.createTree(document.body.children, tree);
-        dev.tree = tree;
-      },1000);
-    }
-  };
-
-  dev.enumerableTree = function (tree, callback) {
-    const enumerable = function (tree) {
       let i = 0;
-      const count = tree.length;
-      while (i < count) {
-        if (callback(tree[i]) === true) {
-          return;
-        }
-        if (tree[i].children.length > 0) {
-          enumerable(tree[i].children);
-        }
-        i++;
-      }
-    };
-    enumerable(tree);
-  };
-
-  dev.getSuperiorElement = function (VRElement) {
-    let element = VRElement.element.parentNode;
-    if ( element !== null ) {
-      while (element.tagName !== "BODY") {
-        for (const command in dev.commands) {
-          if (element.hasAttribute(command)) {
-            return element;
-          }
-        }
-        element = element.parentNode;
-      }
-      return element;
-    }
-    return null;
-  };
-
-  dev.updateSuperiorVRElement = function (superiorElement) {
-    if (superiorElement === document.body) {
-      dev.tree = [];
-      dev.createTree(document.body.children, dev.tree);
-      return;
-    }
-    dev.enumerableTree(dev.tree, function (VRElement) {
-      if (VRElement.element === superiorElement) {
-        VRElement.children = [];
-        dev.createTree(VRElement.element.children, VRElement.children);
-        return true;
-      }
-    });
-  };
-
-  dev.renderGuard = function (callback) {
-    dev.isWatch = false;
-    callback();
-    dev.isWatch = true;
-  };
-
-  dev.notNull = function(value){
-    switch(value){
-      case undefined: return false;
-      case null: return false;
-      default: return true;
-    }
-  };
-
-  dev.parseHump = function(value){
-    return value.replace(new RegExp("\\s+", "g"), "").replace(new RegExp("[A-Z]", "g"), function (Keyword) {
-      return "-" + Keyword.toLowerCase();
-    });
-  };
-
-  dev.parseStyleObject = function(styleObject){
-    const temporary = [];
-    for (const key in styleObject) {
-      temporary.push(dev.parseHump(key));
-      temporary.push(":");
-      temporary.push(styleObject[key]);
-      temporary.push(";");
-    }
-    return temporary.join("");
-  };
-
-  const she = function (name) {
-    const names = name.trim().split(new RegExp("\\s+"));
-    const targetName = names[names.length - 1];
-
-    return function (parameter) {
-      let j = 0;
-
-      const enumerable = function (VRElementName, tree) {
-        let i = 0;
-        const count = tree.length;
-        while (i < count) {
-          if (targetName === names[j]) {
-            let k = 0;
-            const number = tree[i].names.length;
-            while (k < number) {
-              if (targetName === tree[i].names[k]) {
-                dev.commands[tree[i].commands[k]](tree[i], parameter, tree[i].names[k]);
+      const elementsLength = elements.length;
+      while (i < elementsLength) {
+          let isHasCommand = false,
+              VRElementNames,
+              VRElementCommands;
+          const element = elements[i],
+              commands = dev.commands;
+          for (const command in commands) {
+              if (element.hasAttribute(command)) {
+                  if (!isHasCommand) {
+                      tree.push({
+                          names: [],
+                          element,
+                          commands: [],
+                          children: []
+                      });
+                      const VRElement = tree[tree.length - 1];
+                      VRElementNames = VRElement.names;
+                      VRElementCommands = VRElement.commands;
+                      if (element.children.length > 0) {
+                          dev.createTree(element.children, VRElement.children);
+                      }
+                      isHasCommand = true;
+                  }
+                  
+                  VRElementNames.push(element.getAttribute(command).trim().split(new RegExp("\\s+"))[0]);
+                  VRElementCommands.push(command);
               }
-              k++;
-            }
           }
 
-          if (tree[i].children.length > 0) {
-            let k = 0;
-            while (k < tree[i].names.length) {
-              if (VRElementName === tree[i].names[k]) {
-                j++;
-                break;
-              }
-              k++;
-            }
-            enumerable(names[j], tree[i].children);
-            k = 0;
-            while (k < tree[i].names.length) {
-              if (VRElementName === tree[i].names[k]) {
-                j--;
-                break;
-              }
-              k++;
-            }
+          if (!isHasCommand && element.children.length > 0) {
+              dev.createTree(element.children, tree);
           }
 
           i++;
-        }
-      };
+      }
+  };
 
-      enumerable(names[j], dev.tree);
-      return she;
-    };
+  dev.enumerableTree = function (tree, callback) {
+      const enumerable = function (tree) {
+          let i = 0;
+          const treeLength = tree.length;
+          while ( i <  treeLength){
+              if (callback(tree[i]) === false) {
+                  return;
+              }
+              if (tree[i].children.length > 0) {
+                  enumerable(tree[i].children);
+              }
+              i++;
+          }
+      };
+      enumerable(tree);
+  };
+
+  dev.getSuperiorElement = function (VRElement) {
+      let element = VRElement.element.parentNode;
+      if ( element !== null ) {
+          const commands = dev.commands
+          while (element.nodeName !== "BODY") {
+              for (const command in commands) {
+                  if (element.hasAttribute(command)) {
+                      return element;
+                  }
+              }
+              element = element.parentNode;
+          }
+          return element;
+      } else {
+          return null;
+      }
+  };
+
+  dev.getSuperiorVRElement = function (superiorElement) {
+      if (superiorElement === document.body) {
+          return dev.tree;
+      } else {
+          let superiorVRElement;
+          dev.enumerableTree(dev.tree, function (VRElement) {
+              if (VRElement.element === superiorElement) {
+                  superiorVRElement = VRElement;
+                  return false;
+              }
+          });
+          return superiorVRElement;
+      }
+  };
+
+  dev.updateSuperiorVRElement = function (superiorElement) {
+      if (superiorElement === document.body) {
+          dev.tree = [];
+          dev.createTree(document.body.children, dev.tree);
+      } else {
+          dev.enumerableTree(dev.tree, function (VRElement) {
+              if (VRElement.element === superiorElement) {
+                  VRElement.children = [];
+                  dev.createTree(VRElement.element.children, VRElement.children);
+                  return false;
+              }
+          });
+      }
+  };
+
+  dev.isNull = function (value) {
+      switch(value){
+          case undefined: return true;
+          case null: return true;
+          default: return false;
+      }
+  };
+
+  dev.parseHump = function (value) {
+      return value.replace(new RegExp("\\s+", "g"), "").replace(new RegExp("[A-Z]", "g"), function (Keyword) {
+          return ["-", Keyword.toLowerCase()].join("");
+      });
+  };
+
+  dev.parseStyleObject = function (styleObject) {
+      const temporary = [];
+      for (const key in styleObject) {
+          temporary.push(dev.parseHump(key));
+          temporary.push(":");
+          temporary.push(styleObject[key]);
+          temporary.push(";");
+      }
+      return temporary.join("");
   };
 
   dev.createTree(document.body.children, dev.tree);
-  document.addEventListener("DOMNodeInserted", dev.updateTree);
-  document.addEventListener("DOMNodeRemoved", dev.updateTree);
 
-  she.style = function(styleArray){
-    if(Array.isArray(styleArray)){
+  const she = function (name) {
+      const names = name.trim().split(new RegExp("\\s+"));
+      const targetName = names[names.length -1];
 
+      return function () {
+          const parameter = arguments;
+          let j = 0;
+
+          const enumerable = function (VRElementName, tree, parameter) {
+              let i = 0;
+              const treeLength = tree.length;
+              while (i < treeLength) {
+                  const VRElement = tree[i];
+                  if (targetName === names[j]) {
+                      let k = 0;
+                      const VRElementNames = VRElement.names;
+                      const VRElementCommands = VRElement.commands;
+                      const count = VRElementNames.length;
+                      while (k < count) {
+                          if (targetName === VRElementNames[k]) {
+                              switch (VRElementCommands[k]) {
+                                  case "she-event":
+                                      dev.commands["she-event"](VRElement, parameter);
+                                      break;
+                                  case "she-for":
+                                      dev.commands["she-for"](VRElement, parameter[0], targetName);
+                                      break;
+                                  default:
+                                      dev.commands[VRElementCommands[k]](VRElement, parameter[0]);
+                              }
+                          }
+                          k++;
+                      }
+                  }
+
+                  if (VRElement.children.length > 0) {
+                      let k = 0;
+                      const VRElementNames = VRElement.names;
+                      const count = VRElementNames.length;
+                      while (k < count) {
+                          if (VRElementName === VRElementNames[k]) {
+                              j++;
+                              break;
+                          }
+                          k++;
+                      }
+                      enumerable(names[j], VRElement.children, parameter);
+                      k = 0;
+                      while (k < count) {
+                          if (VRElementName === VRElementNames[k]) {
+                              j--;
+                              break;
+                          }
+                          k++;
+                      }
+                  }
+                  i++;
+              }
+
+          };
+          enumerable(names[j], dev.tree, parameter);
+          return she;
+      };
+  };
+
+  she.style = function (styleArray) {
+      let i = 0;
       const temporary = [];
-      let i = 0, count = styleArray.length;
-      while(i < count){
+      const styleArrayLength = styleArray.length;
+      while (i < styleArrayLength) {
           temporary.push(styleArray[i][0]);
           temporary.push("{");
           temporary.push(dev.parseStyleObject(styleArray[i][1]));
           temporary.push("}");
           i++;
       }
-
       const styleString = temporary.join("");
 
       i = 0;
-      const headChildren = document.head.children;
-      count = headChildren.length;
-      while(i < count){
-        if(headChildren[i].nodeName === "STYLE"){
-            const regexp = styleString.replace(new RegExp(":(.+?);|\\.|\\[|\\]|\\{|\\}|\\*|\\+", "g"), function(Keyword){
-              switch(Keyword){
-                case ".": return "\\.";
-                case "[": return "\\[";
-                case "]": return "\\]";
-                case "{": return "\\{";
-                case "}": return "\\}";
-                case "*": return "\\*";
-                case "+": return "\\+";
+      const headTag = document.head;
+      const headChildren = headTag.children;
+      const headChildrenLength = headChildren.length;
+      while (i < headChildrenLength) {
+          if (headChildren[i].nodeName === "STYLE") {
+              const styleTag = headChildren[i];
+              const styleTagContent = styleTag.innerHTML;
+              const regexp = styleString.replace(new RegExp(":(.+?);|\\.|\\[|\\]|\\{|\\}|\\*|\\+", "g"), function(Keyword){
+                  switch (Keyword) {
+                      case ".": return "\\.";
+                      case "[": return "\\[";
+                      case "]": return "\\]";
+                      case "{": return "\\{";
+                      case "}": return "\\}";
+                      case "*": return "\\*";
+                      case "+": return "\\+";
+                  }
+                  const temporary = [];
+                  temporary.push(":");
+                  temporary.push("(.+?)");
+                  temporary.push(";");
+                  return temporary.join("");
+              });
+              if (styleTagContent.search(new RegExp(regexp)) === -1) {
+                  styleTag.innerHTML = [styleTagContent, styleString].join("");
+              } else {
+                  styleTag.innerHTML = styleTagContent.replace(new RegExp(regexp), styleString);
               }
-              const temporary = [];
-              temporary.push(":");
-              temporary.push("(.+?)");
-              temporary.push(";");
-              return temporary.join("");
-            });
-            if(headChildren[i].innerHTML.search(new RegExp(regexp)) === -1){
-              headChildren[i].innerHTML = [headChildren[i].innerHTML, styleString].join("");
-            }else{
-              headChildren[i].innerHTML = headChildren[i].innerHTML.replace(new RegExp(regexp), styleString);
-            }
-            return;
-        }
-        i++;
+              return;
+          }
+          i++;
       }
 
-      const style = document.createElement("style");
-      style.innerHTML = styleString;
-      document.head.appendChild(style);
-    }
+      const styleTag = document.createElement("style");
+      styleTag.innerHTML = styleString;
+      headTag.appendChild(styleTag);
   };
 
-  she.router = function(callback){
-    location.hash = "#/";
-    window.addEventListener("hashchange", function(){
-      const hash = location.hash.split("#")[1];
-      callback(hash);
-    });
+  she.router = function (callback) {
+      location.hash = "#/";
+      window.addEventListener("hashchange", function () {
+          const hash = location.hash.split("#")[1];
+          callback(hash);
+      });
   };
 
   return she;
