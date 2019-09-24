@@ -257,17 +257,6 @@
         }
     };
 
-    dev.commands["she-event"] = function (VRElement, value) {
-        if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-            const VRElementElement = VRElement.element;
-            for (const key in value) {
-                VRElementElement[["on", key].join("")] = value[key];
-            }
-            VRElementElement.removeAttribute("she-event");
-            dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-        }
-    };
-
     dev.createTree = function (elements, tree) {
         let i = 0;
         const elementsLength = elements.length;
