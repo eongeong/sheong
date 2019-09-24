@@ -507,13 +507,5 @@
         headTag.appendChild(styleTag);
     };
 
-    she.router = function (callback) {
-        location.hash = "#/";
-        window.addEventListener("hashchange", function () {
-            const hash = location.hash.split("#")[1];
-            callback(hash);
-        });
-    };
-
     return she;
 });

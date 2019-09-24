@@ -18,13 +18,12 @@ she
 const data = ["Welcome", "this is a loyal to native JS"]
 
 home(data[0]);
-she.router((hash) => {
-    switch(hash){
-        case "/": home(data[0]); break;
-        case "/about": about(data[1]);
+window.addEventListener("hashchange", function () {
+    switch(location.hash){
+        case "#/": home(data[0]); break;
+        case "#/about": about(data[1]);
     }
 });
-
 she.style(defaultStyle);
 she.style(flex);
 she.style([
