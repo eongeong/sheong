@@ -46,13 +46,7 @@
             }
         }
     };
-
-    dev.commands["she-style"] = function (VRElement, value) {
-        if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-            VRElement.element.setAttribute("style", dev.parseStyleObject(value));
-        }
-    };
-
+    
     dev.commands["she-attribute"] = function (VRElement, value) {
         if (value !== null && typeof value === "object" && !Array.isArray(value)) {
             let isUpdateSuperiorVRElement = false;
@@ -65,10 +59,11 @@
                 }
 
                 switch(value[key]){
-                    case "":
-                        VRElement.element.attributeName = "";
-                        break;
+                    case true:
+                        VRElement.element.attributeName = true;
+                        break;    
                     case false:
+                        VRElement.element.attributeName = false;
                         VRElement.element.removeAttribute(attributeName);
                         break;
                     default:
