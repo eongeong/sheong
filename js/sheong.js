@@ -196,7 +196,7 @@
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
             }
         } else if (typeof value !== "function") {
-            if(type !== "string"){
+            if(typeof value !== "string"){
                 value = value.toString();    
             }
             if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
