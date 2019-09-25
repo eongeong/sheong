@@ -201,10 +201,6 @@
             } else if (value.search(new RegExp("<(.*?)/(.*?)>")) === -1) {
                 VRElement.element.textContent = value;
                 VRElement.children = [];
-            } else {
-                VRElement.element.innerHTML = value;
-                VRElement.children = [];
-                dev.createTree(VRElement.element.children, VRElement.children);
             }
         }
     };
