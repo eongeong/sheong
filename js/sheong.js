@@ -29,6 +29,35 @@
             dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
         }
     };
+
+    dev.commands["she-attribute"] = function (VRElement, value) {
+        if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+            let isUpdateSuperiorVRElement = false;
+
+            for (const key in value) {
+                const attributeName = dev.parseHump(key);
+
+                if(isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1){
+                    isUpdateSuperiorVRElement = true;
+                }
+
+                switch(value[key]){
+                    case "":
+                        VRElement.element.attributeName = "";
+                        break;
+                    case false:
+                        VRElement.element.removeAttribute(attributeName);
+                        break;
+                    default:
+                        VRElement.element.setAttribute(attributeName, value[key]);
+                }
+            }
+
+            if(isUpdateSuperiorVRElement){
+                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+            }
+        }
+    };
           
     dev.commands["she-for"] = function (VRElement, value, name) {
         if (value !== null && typeof value === "object") {
@@ -124,8 +153,7 @@
         }
     };
   
-    dev.commands["she-render"] = function (VRElement, value) {
-        const type = typeof value;
+    dev.commands["she-content"] = function (VRElement, value) {
         if (Array.isArray(value)) {
             VRElement.element.textContent = "";
             VRElement.children = [];
@@ -166,36 +194,10 @@
             if (isUpdateSuperiorVRElement) {
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
             }
-        } else if (value !== null && type === "object") {
-            let isUpdateSuperiorVRElement = false;
-  
-            for (const key in value) {
-                const attributeName = dev.parseHump(key);
-  
-                if (isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1) {
-                    isUpdateSuperiorVRElement = true;
-                }
-  
-                switch (value[key]) {
-                    case true:
-                        VRElement.element.attributeName = true;
-                        break;    
-                    case false:
-                        VRElement.element.attributeName = false;
-                        VRElement.element.removeAttribute(attributeName);
-                        break;
-                    default:
-                        VRElement.element.setAttribute(attributeName, value[key]);
-                }
-            }
-  
-            if (isUpdateSuperiorVRElement) {
-                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-            }
-        } else if (type !== "function") {
+        } else if (value !== undefined && typeof value !== "object" && typeof value !== "function") {
             if (dev.isNull(value)) {
                 VRElement.element.textContent = "";
-            } else if (type !== "string") {
+            } else if (typeof value !== "string") {
                 VRElement.element.textContent = value;
                 VRElement.children = [];
             } else if (value.search(new RegExp("<(.*?)/(.*?)>")) === -1) {
