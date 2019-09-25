@@ -7,9 +7,9 @@
         exports.she = factory();
     else
         window.she = factory();
-})(function () {
+  })(function () {
     "use strict";
-
+  
     const dev = {
         tree: [],
         commands: {},
@@ -22,14 +22,14 @@
         parseHump: undefined,
         parseStyleObject: undefined        
     };
-
+  
     dev.commands["she"] = function (VRElement, value) {
         if( typeof value === "function" && value(VRElement.element) === false ) {
             VRElement.element.removeAttribute("she");
             dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
         }
     };
-
+  
     dev.commands["she-content"] = function (VRElement, value) {
         const type = typeof value;
         if(value !== undefined && type !== "object" && type !== "function"){
@@ -50,14 +50,14 @@
     dev.commands["she-attribute"] = function (VRElement, value) {
         if (value !== null && typeof value === "object" && !Array.isArray(value)) {
             let isUpdateSuperiorVRElement = false;
-
+  
             for (const key in value) {
                 const attributeName = dev.parseHump(key);
-
+  
                 if(isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1){
                     isUpdateSuperiorVRElement = true;
                 }
-
+  
                 switch(value[key]){
                     case true:
                         VRElement.element.attributeName = true;
@@ -70,13 +70,13 @@
                         VRElement.element.setAttribute(attributeName, value[key]);
                 }
             }
-
+  
             if(isUpdateSuperiorVRElement){
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
             }
         }
     };
-
+  
     dev.commands["she-for"] = function (VRElement, value, name) {
         if (value !== null && typeof value === "object") {
             const superiorElement = dev.getSuperiorElement(VRElement);
@@ -87,7 +87,7 @@
                 const forCookie = VRElementElement.getAttribute("she-for").trim().split(new RegExp("\\s+"));
                 const forCookie_1 = dev.parseHump(forCookie[1]);
                 const forCookie_2 = dev.parseHump(forCookie[2]);
-
+  
                 while(
                     VRElementElement.nextElementSibling !== null
                     &&
@@ -97,18 +97,18 @@
                 ){
                     VRElementElementParentNode.removeChild(VRElementElement.nextElementSibling);
                 }
-
+  
                 for (const key in value) {
                     const cloneElement = VRElementElement.cloneNode(true);
                     cloneElement.setAttribute(forCookie_1, JSON.stringify(value[key]));
                     cloneElement.setAttribute(forCookie_2, key);
                     fragment.appendChild(cloneElement);
                 }
-
+  
                 VRElementElementParentNode.replaceChild(fragment, VRElementElement);
                 dev.updateSuperiorVRElement(superiorElement);
-                const superiorNode = dev.getSuperiorVRElement(superiorElement).children;
-
+                const superiorNode = dev.getSuperiorNode(superiorElement);
+  
                 const getData = function (VRElementElement, name) {
                     if (VRElementElement.hasAttribute(name)) {
                         if (name === forCookie_1) {
@@ -130,7 +130,7 @@
                         }
                     }
                 };
-
+  
                 dev.enumerableTree(superiorNode, function (VRElement) {
                     const VRElementElement = VRElement.element;
                     const VRElementNames = VRElement.names;
@@ -162,15 +162,15 @@
                         if (temporaryName === forCookie_2) {
                             dev.commands[command](VRElement, getData(VRElementElement, forCookie_2), temporaryName);
                         }
-
+  
                         i++;
                     }
                 });
-
+  
             }
         }
     };
-
+  
     dev.commands["she-render"] = function (VRElement, value) {
         if (Array.isArray(value)) {
             VRElement.element.textContent = "";
@@ -182,7 +182,7 @@
                 while ( !dev.isNull(value[i]) ) {
                     const elementMap = value[i];
                     const element = document.createElement(elementMap[0]);
-
+  
                     if ( !dev.isNull(elementMap[1]) ) {
                         for (const attribute in elementMap[1]) {
                             const attributeName = dev.parseHump(attribute);
@@ -192,7 +192,7 @@
                             element.setAttribute(attributeName, elementMap[1][attribute]);
                         }
                     }
-
+  
                     if ( !dev.isNull(elementMap[2]) ) {
                         if (typeof elementMap[2][0] === "string") {
                             element.textContent = elementMap[2][0];
@@ -200,13 +200,13 @@
                             renderer(element, elementMap[2]);
                         }
                     }
-
+  
                     parent.appendChild(element);                    
-
+  
                     i++;
                 }
             };
-
+  
             renderer(fragment, value);
             VRElement.element.appendChild(fragment);
             if (isUpdateSuperiorVRElement) {
@@ -214,20 +214,20 @@
             }
         }
     };
-
+  
     dev.commands["she-change"] = function (VRElement, value) {
         if (Array.isArray(value)) {
             const VRElementElement = VRElement.element;
             let oldStyleString = VRElementElement.getAttribute("style");
             if ( !dev.isNull(oldStyleString) ) {
                 let i = 0;
-
+  
                 if ( VRElementElement.hasAttribute("change-index") ) {
                     i = parseInt(VRElementElement.getAttribute("change-index"));
                 } else {
                     i = 0;
                 }
-
+  
                 const valueLength = value.length;
                 while (i < valueLength) {
                     if (dev.parseStyleObject(value[i]) === oldStyleString) {
@@ -239,10 +239,10 @@
                         VRElementElement.setAttribute("change-index", i);
                         return;
                     }
-
+  
                     i++;
                 }
-
+  
                 dev.commands["she-style"](VRElement, value[0]);
                 VRElementElement.setAttribute("change-index", 0);
             } else {
@@ -251,7 +251,7 @@
             }
         }
     };
-
+  
     dev.createTree = function (elements, tree) {
         let i = 0;
         const elementsLength = elements.length;
@@ -283,15 +283,15 @@
                     VRElementCommands.push(command);
                 }
             }
-
+  
             if (!isHasCommand && element.children.length > 0) {
                 dev.createTree(element.children, tree);
             }
-
+  
             i++;
         }
     };
-
+  
     dev.enumerableTree = function (tree, callback) {
         const enumerable = function (tree) {
             let i = 0;
@@ -308,7 +308,7 @@
         };
         enumerable(tree);
     };
-
+  
     dev.getSuperiorElement = function (VRElement) {
         let element = VRElement.element.parentNode;
         if ( element !== null ) {
@@ -326,22 +326,22 @@
             return null;
         }
     };
-
-    dev.getSuperiorVRElement = function (superiorElement) {
+  
+    dev.getSuperiorNode = function (superiorElement) {
         if (superiorElement === document.body) {
             return dev.tree;
         } else {
-            let superiorVRElement;
+            let superiorNode;
             dev.enumerableTree(dev.tree, function (VRElement) {
                 if (VRElement.element === superiorElement) {
-                    superiorVRElement = VRElement;
+                    superiorNode = VRElement.children;
                     return false;
                 }
             });
-            return superiorVRElement;
+            return superiorNode;
         }
     };
-
+  
     dev.updateSuperiorVRElement = function (superiorElement) {
         if (superiorElement === document.body) {
             dev.tree = [];
@@ -356,7 +356,7 @@
             });
         }
     };
-
+  
     dev.isNull = function (value) {
         switch(value){
             case undefined: return true;
@@ -364,13 +364,13 @@
             default: return false;
         }
     };
-
+  
     dev.parseHump = function (value) {
         return value.replace(new RegExp("\\s+", "g"), "").replace(new RegExp("[A-Z]", "g"), function (Keyword) {
             return ["-", Keyword.toLowerCase()].join("");
         });
     };
-
+  
     dev.parseStyleObject = function (styleObject) {
         const temporary = [];
         for (const key in styleObject) {
@@ -381,16 +381,14 @@
         }
         return temporary.join("");
     };
-
-    dev.createTree(document.body.children, dev.tree);
-
+    
     const she = function (name) {
         const names = name.trim().split(new RegExp("\\s+"));
         const targetName = names[names.length -1];
-
+  
         return function (parameter) {
             let j = 0;
-
+  
             const enumerable = function (VRElementName, tree, parameter) {
                 let i = 0;
                 const treeLength = tree.length;
@@ -408,7 +406,7 @@
                             k++;
                         }
                     }
-
+  
                     if (VRElement.children.length > 0) {
                         let k = 0;
                         const VRElementNames = VRElement.names;
@@ -432,13 +430,14 @@
                     }
                     i++;
                 }
-
+  
             };
+            
             enumerable(names[j], dev.tree, parameter);
             return she;
         };
     };
-
+  
     she.style = function (styleArray) {
         let i = 0;
         const temporary = [];
@@ -451,7 +450,7 @@
             i++;
         }
         const styleString = temporary.join("");
-
+  
         i = 0;
         const headTag = document.head;
         const headChildren = headTag.children;
@@ -485,11 +484,13 @@
             }
             i++;
         }
-
+  
         const styleTag = document.createElement("style");
         styleTag.innerHTML = styleString;
         headTag.appendChild(styleTag);
     };
-
+  
+    dev.createTree(document.body.children, dev.tree);
+  
     return she;
-});
+  });
