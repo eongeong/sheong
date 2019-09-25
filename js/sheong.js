@@ -42,10 +42,11 @@
                 }
 
                 switch(value[key]){
-                    case "":
-                        VRElement.element.attributeName = "";
+                    case true:
+                        VRElement.element.attributeName = true;
                         break;
                     case false:
+                        VRElement.element.attributeName = false;
                         VRElement.element.removeAttribute(attributeName);
                         break;
                     default:
