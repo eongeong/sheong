@@ -16,50 +16,20 @@
         createTree: undefined,
         enumerableTree: undefined,
         getSuperiorElement: undefined,
-        getSuperiorVRElement: undefined,
+        getSuperiorNode: undefined,
         updateSuperiorVRElement: undefined,
         isNull: undefined,
         parseHump: undefined,
-        parseStyleObject: undefined        
+        parseStyleObject: undefined
     };
   
     dev.commands["she"] = function (VRElement, value) {
-        if( typeof value === "function" && value(VRElement.element) === false ) {
+        if ( typeof value === "function" && value(VRElement.element) === false ) {
             VRElement.element.removeAttribute("she");
             dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
         }
     };
-      
-    dev.commands["she-attribute"] = function (VRElement, value) {
-        if (value !== null && typeof value === "object" && !Array.isArray(value)) {
-            let isUpdateSuperiorVRElement = false;
-  
-            for (const key in value) {
-                const attributeName = dev.parseHump(key);
-  
-                if(isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1){
-                    isUpdateSuperiorVRElement = true;
-                }
-  
-                switch(value[key]){
-                    case true:
-                        VRElement.element.attributeName = true;
-                        break;    
-                    case false:
-                        VRElement.element.attributeName = false;
-                        VRElement.element.removeAttribute(attributeName);
-                        break;
-                    default:
-                        VRElement.element.setAttribute(attributeName, value[key]);
-                }
-            }
-  
-            if(isUpdateSuperiorVRElement){
-                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-            }
-        }
-    };
-  
+          
     dev.commands["she-for"] = function (VRElement, value, name) {
         if (value !== null && typeof value === "object") {
             const superiorElement = dev.getSuperiorElement(VRElement);
@@ -126,7 +96,7 @@
                         if (dev.parseHump(temporaryName).search( new RegExp(["^", forCookie_1, "$|^", forCookie_1, "[\\.\\[]|\\{(.+?):", forCookie_1, "(.*?)\\}"].join("")) ) !== -1) {
                             const item = getData(VRElementElement, forCookie_1);
                             if (!dev.isNull(item)) {
-                                if(temporaryName.indexOf("{") === -1){
+                                if (temporaryName.indexOf("{") === -1) {
                                     dev.commands[command](VRElement, eval( temporaryName.replace(forCookie[1], "item") ), temporaryName);
                                 } else {
                                     const temporaryArray = temporaryName.replace(forCookie[1], "item").replace(new RegExp("\\{|\\}", "g"), "").split(",");
@@ -155,6 +125,7 @@
     };
   
     dev.commands["she-render"] = function (VRElement, value) {
+        const type = typeof value;
         if (Array.isArray(value)) {
             VRElement.element.textContent = "";
             VRElement.children = [];
@@ -195,11 +166,39 @@
             if (isUpdateSuperiorVRElement) {
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
             }
-        } else if (typeof value !== "function") {
-            if(typeof value !== "string"){
-                value = value.toString();    
+        } else if (value !== null && type === "object") {
+            let isUpdateSuperiorVRElement = false;
+  
+            for (const key in value) {
+                const attributeName = dev.parseHump(key);
+  
+                if (isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1) {
+                    isUpdateSuperiorVRElement = true;
+                }
+  
+                switch (value[key]) {
+                    case true:
+                        VRElement.element.attributeName = true;
+                        break;    
+                    case false:
+                        VRElement.element.attributeName = false;
+                        VRElement.element.removeAttribute(attributeName);
+                        break;
+                    default:
+                        VRElement.element.setAttribute(attributeName, value[key]);
+                }
             }
-            if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
+  
+            if (isUpdateSuperiorVRElement) {
+                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+            }
+        } else if (type !== "function") {
+            if (dev.isNull(value)) {
+                VRElement.element.textContent = "";
+            } else if (type !== "string") {
+                VRElement.element.textContent = value;
+                VRElement.children = [];
+            } else if (value.search(new RegExp("<(.*?)/(.*?)>")) === -1) {
                 VRElement.element.textContent = value;
                 VRElement.children = [];
             } else {
