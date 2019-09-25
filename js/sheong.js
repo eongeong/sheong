@@ -29,24 +29,7 @@
             dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
         }
     };
-  
-    dev.commands["she-content"] = function (VRElement, value) {
-        const type = typeof value;
-        if(value !== undefined && type !== "object" && type !== "function"){
-            if(type !== "string"){
-                value = value.toString();    
-            }
-            if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
-                VRElement.element.textContent = value;
-                VRElement.children = [];
-            } else {
-                VRElement.element.innerHTML = value;
-                VRElement.children = [];
-                dev.createTree(VRElement.element.children, VRElement.children);
-            }
-        }
-    };
-    
+      
     dev.commands["she-attribute"] = function (VRElement, value) {
         if (value !== null && typeof value === "object" && !Array.isArray(value)) {
             let isUpdateSuperiorVRElement = false;
@@ -212,6 +195,18 @@
             if (isUpdateSuperiorVRElement) {
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
             }
+        } else if (typeof value !== "function") {
+            if(type !== "string"){
+                value = value.toString();    
+            }
+            if(value.search(new RegExp("<(.*?)/(.*?)>")) === -1){
+                VRElement.element.textContent = value;
+                VRElement.children = [];
+            } else {
+                VRElement.element.innerHTML = value;
+                VRElement.children = [];
+                dev.createTree(VRElement.element.children, VRElement.children);
+            }
         }
     };
   
@@ -235,7 +230,7 @@
                         if (i === valueLength) {
                             i = 0;
                         }
-                        dev.commands["she-style"](VRElement, value[i]);
+                        VRElementElement.setAttribute("style", dev.parseStyleObject(value[i]));
                         VRElementElement.setAttribute("change-index", i);
                         return;
                     }
@@ -243,10 +238,10 @@
                     i++;
                 }
   
-                dev.commands["she-style"](VRElement, value[0]);
+                VRElementElement.setAttribute("style", dev.parseStyleObject(value[0]));
                 VRElementElement.setAttribute("change-index", 0);
             } else {
-                dev.commands["she-style"](VRElement, value[0]);
+                VRElementElement.setAttribute("style", dev.parseStyleObject(value[0]));
                 VRElementElement.setAttribute("change-index", 0);
             }
         }
