@@ -99,7 +99,7 @@
                                 if (temporaryName.indexOf("{") === -1) {
                                     dev.commands[command](VRElement, eval( temporaryName.replace(forCookie[1], "item") ), temporaryName);
                                 } else {
-                                    const temporaryArray = temporaryName.replace(forCookie[1], "item").replace(new RegExp("\\{|\\}", "g"), "").split(",");
+                                    const temporaryArray = temporaryName.replace(forCookie[1], "item").replace(new RegExp("\\{|\\}|\\s", "g"), "").split(",");
                                     const temporaryArrayLength = temporaryArray.length;
                                     const value = {};
                                     let j = 0;
