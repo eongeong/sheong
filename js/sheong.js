@@ -30,6 +30,57 @@
         }
     };
 
+    dev.commands["she-content"] = function (VRElement, value) {
+        if (Array.isArray(value)) {
+            VRElement.element.textContent = "";
+            VRElement.children = [];
+            let isUpdateSuperiorVRElement = false;
+            const fragment = document.createDocumentFragment();
+            const renderer = function (parent, value) {
+                let i = 0;
+                while ( !dev.isNull(value[i]) ) {
+                    const elementMap = value[i];
+                    const element = document.createElement(elementMap[0]);
+  
+                    if ( !dev.isNull(elementMap[1]) ) {
+                        for (const attribute in elementMap[1]) {
+                            const attributeName = dev.parseHump(attribute);
+                            if (isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1) {
+                                isUpdateSuperiorVRElement = true;
+                            }
+                            element.setAttribute(attributeName, elementMap[1][attribute]);
+                        }
+                    }
+  
+                    if ( !dev.isNull(elementMap[2]) ) {
+                        if (typeof elementMap[2][0] === "string") {
+                            element.textContent = elementMap[2][0];
+                        } else {
+                            renderer(element, elementMap[2]);
+                        }
+                    }
+  
+                    parent.appendChild(element);                    
+  
+                    i++;
+                }
+            };
+  
+            renderer(fragment, value);
+            VRElement.element.appendChild(fragment);
+            if (isUpdateSuperiorVRElement) {
+                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+            }
+        } else if (typeof value !== "function") {
+            if (dev.isNull(value)) {
+                VRElement.element.textContent = "";
+            } else if (typeof value !== "string" || value.search(new RegExp("<(.*?)/(.*?)>")) === -1) {
+                VRElement.element.textContent = value;
+                VRElement.children = [];
+            }
+        }
+    };
+
     dev.commands["she-attribute"] = function (VRElement, value) {
         if (value !== null && typeof value === "object" && !Array.isArray(value)) {
             let isUpdateSuperiorVRElement = false;
@@ -56,6 +107,43 @@
 
             if(isUpdateSuperiorVRElement){
                 dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
+            }
+        }
+    };
+
+    dev.commands["she-change"] = function (VRElement, value) {
+        if (Array.isArray(value)) {
+            const VRElementElement = VRElement.element;
+            let oldStyleString = VRElementElement.getAttribute("style");
+            if ( !dev.isNull(oldStyleString) ) {
+                let i = 0;
+  
+                if ( VRElementElement.hasAttribute("change-index") ) {
+                    i = parseInt(VRElementElement.getAttribute("change-index"));
+                } else {
+                    i = 0;
+                }
+  
+                const valueLength = value.length;
+                while (i < valueLength) {
+                    if (dev.parseStyleObject(value[i]) === oldStyleString) {
+                        i++;
+                        if (i === valueLength) {
+                            i = 0;
+                        }
+                        VRElementElement.setAttribute("style", dev.parseStyleObject(value[i]));
+                        VRElementElement.setAttribute("change-index", i);
+                        return;
+                    }
+  
+                    i++;
+                }
+  
+                VRElementElement.setAttribute("style", dev.parseStyleObject(value[0]));
+                VRElementElement.setAttribute("change-index", 0);
+            } else {
+                VRElementElement.setAttribute("style", dev.parseStyleObject(value[0]));
+                VRElementElement.setAttribute("change-index", 0);
             }
         }
     };
@@ -150,97 +238,6 @@
                     }
                 });
   
-            }
-        }
-    };
-  
-    dev.commands["she-content"] = function (VRElement, value) {
-        if (Array.isArray(value)) {
-            VRElement.element.textContent = "";
-            VRElement.children = [];
-            let isUpdateSuperiorVRElement = false;
-            const fragment = document.createDocumentFragment();
-            const renderer = function (parent, value) {
-                let i = 0;
-                while ( !dev.isNull(value[i]) ) {
-                    const elementMap = value[i];
-                    const element = document.createElement(elementMap[0]);
-  
-                    if ( !dev.isNull(elementMap[1]) ) {
-                        for (const attribute in elementMap[1]) {
-                            const attributeName = dev.parseHump(attribute);
-                            if (isUpdateSuperiorVRElement === false && attributeName.indexOf("she") !== -1) {
-                                isUpdateSuperiorVRElement = true;
-                            }
-                            element.setAttribute(attributeName, elementMap[1][attribute]);
-                        }
-                    }
-  
-                    if ( !dev.isNull(elementMap[2]) ) {
-                        if (typeof elementMap[2][0] === "string") {
-                            element.textContent = elementMap[2][0];
-                        } else {
-                            renderer(element, elementMap[2]);
-                        }
-                    }
-  
-                    parent.appendChild(element);                    
-  
-                    i++;
-                }
-            };
-  
-            renderer(fragment, value);
-            VRElement.element.appendChild(fragment);
-            if (isUpdateSuperiorVRElement) {
-                dev.updateSuperiorVRElement(dev.getSuperiorElement(VRElement));
-            }
-        } else if (value !== undefined && typeof value !== "object" && typeof value !== "function") {
-            if (dev.isNull(value)) {
-                VRElement.element.textContent = "";
-            } else if (typeof value !== "string") {
-                VRElement.element.textContent = value;
-                VRElement.children = [];
-            } else if (value.search(new RegExp("<(.*?)/(.*?)>")) === -1) {
-                VRElement.element.textContent = value;
-                VRElement.children = [];
-            }
-        }
-    };
-  
-    dev.commands["she-change"] = function (VRElement, value) {
-        if (Array.isArray(value)) {
-            const VRElementElement = VRElement.element;
-            let oldStyleString = VRElementElement.getAttribute("style");
-            if ( !dev.isNull(oldStyleString) ) {
-                let i = 0;
-  
-                if ( VRElementElement.hasAttribute("change-index") ) {
-                    i = parseInt(VRElementElement.getAttribute("change-index"));
-                } else {
-                    i = 0;
-                }
-  
-                const valueLength = value.length;
-                while (i < valueLength) {
-                    if (dev.parseStyleObject(value[i]) === oldStyleString) {
-                        i++;
-                        if (i === valueLength) {
-                            i = 0;
-                        }
-                        VRElementElement.setAttribute("style", dev.parseStyleObject(value[i]));
-                        VRElementElement.setAttribute("change-index", i);
-                        return;
-                    }
-  
-                    i++;
-                }
-  
-                VRElementElement.setAttribute("style", dev.parseStyleObject(value[0]));
-                VRElementElement.setAttribute("change-index", 0);
-            } else {
-                VRElementElement.setAttribute("style", dev.parseStyleObject(value[0]));
-                VRElementElement.setAttribute("change-index", 0);
             }
         }
     };
@@ -451,7 +448,7 @@
         while (i < headChildrenLength) {
             if (headChildren[i].nodeName === "STYLE") {
                 const styleTag = headChildren[i];
-                const styleTagContent = styleTag.innerHTML;
+                const styleTagContent = styleTag.textContent;
                 const regexp = styleString.replace(new RegExp(":(.+?);|\\.|\\[|\\]|\\{|\\}|\\*|\\+", "g"), function(Keyword){
                     switch (Keyword) {
                         case ".": return "\\.";
@@ -469,9 +466,9 @@
                     return temporary.join("");
                 });
                 if (styleTagContent.search(new RegExp(regexp)) === -1) {
-                    styleTag.innerHTML = [styleTagContent, styleString].join("");
+                    styleTag.textContent = [styleTagContent, styleString].join("");
                 } else {
-                    styleTag.innerHTML = styleTagContent.replace(new RegExp(regexp), styleString);
+                    styleTag.textContent = styleTagContent.replace(new RegExp(regexp), styleString);
                 }
                 return;
             }
@@ -479,7 +476,7 @@
         }
   
         const styleTag = document.createElement("style");
-        styleTag.innerHTML = styleString;
+        styleTag.textContent = styleString;
         headTag.appendChild(styleTag);
     };
   
