@@ -82,6 +82,7 @@
     };
 
     dev.commands["she-attribute"] = function (VRElement, value) {
+        console.log(value)
         if (value !== null && typeof value === "object" && !Array.isArray(value)) {
             let isUpdateSuperiorVRElement = false;
 
@@ -155,7 +156,7 @@
                 const VRElementElement = VRElement.element;
                 const VRElementElementParentNode = VRElementElement.parentNode;
                 const fragment = document.createDocumentFragment();
-                const forCookie = VRElementElement.getAttribute("she-for").trim().split(new RegExp("\\s+"));
+                const forCookie = VRElementElement.getAttribute("she-for").replace(new RegExp("\\s+","g"), "").split(";");
                 const forCookie_1 = dev.parseHump(forCookie[1]);
                 const forCookie_2 = dev.parseHump(forCookie[2]);
   
@@ -269,7 +270,7 @@
                         isHasCommand = true;
                     }
                     
-                    VRElementNames.push(element.getAttribute(command).trim().split(new RegExp("\\s+"))[0]);
+                    VRElementNames.push(element.getAttribute(command).replace(new RegExp("\\s+","g"), "").split(";")[0]);
                     VRElementCommands.push(command);
                 }
             }
@@ -422,7 +423,6 @@
                 }
   
             };
-            
             enumerable(names[j], dev.tree, parameter);
             return she;
         };

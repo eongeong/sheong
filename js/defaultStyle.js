@@ -17,7 +17,7 @@ const defaultStyle = [
       outline: "none",
       backgroundColor: "transparent"
   }],
-  ["[ellipsis]", {
+  ["[oneline]", {
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap"
