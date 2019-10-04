@@ -82,7 +82,6 @@
     };
 
     dev.commands["she-attribute"] = function (VRElement, value) {
-        console.log(value)
         if (value !== null && typeof value === "object" && !Array.isArray(value)) {
             let isUpdateSuperiorVRElement = false;
 
@@ -121,8 +120,6 @@
   
                 if ( VRElementElement.hasAttribute("change-index") ) {
                     i = parseInt(VRElementElement.getAttribute("change-index"));
-                } else {
-                    i = 0;
                 }
   
                 const valueLength = value.length;
