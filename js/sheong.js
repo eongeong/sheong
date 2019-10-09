@@ -74,12 +74,10 @@
         } else if (typeof value !== "function") {
             if (dev.isNull(value)) {
                 VRElement.element.textContent = "";
-            } else if (typeof value !== "string" || value.search(new RegExp("<(.*?)/(.*?)>")) === -1) {
-                VRElement.element.textContent = value;
-                VRElement.children = [];
             } else {
-                VRElement.element.textContent = value.replace(new RegExp("<(.*?)>", "g"), "");
+                VRElement.element.textContent = value;
             }
+            VRElement.children = [];
         }
     };
 
