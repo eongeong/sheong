@@ -455,12 +455,8 @@
                         case "}": return "\\}";
                         case "*": return "\\*";
                         case "+": return "\\+";
+                        default: return ":(.+?);";
                     }
-                    const temporary = [];
-                    temporary.push(":");
-                    temporary.push("(.+?)");
-                    temporary.push(";");
-                    return temporary.join("");
                 });
                 if (styleTagContent.search(new RegExp(regexp)) === -1) {
                     styleTag.textContent = [styleTagContent, styleString].join("");
