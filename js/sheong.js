@@ -60,7 +60,7 @@
                         }
                     }
   
-                    parent.appendChild(element);                    
+                    parent.appendChild(element);
   
                     i++;
                 }
@@ -94,10 +94,10 @@
 
                 switch(value[key]){
                     case true:
-                        VRElement.element.attributeName = true;
+                        VRElement.element[attributeName] = true;
                         break;
                     case false:
-                        VRElement.element.attributeName = false;
+                        VRElement.element[attributeName] = false;
                         VRElement.element.removeAttribute(attributeName);
                         break;
                     default:
