@@ -446,7 +446,7 @@
             if (headChildren[i].nodeName === "STYLE") {
                 const styleTag = headChildren[i];
                 const styleTagContent = styleTag.textContent;
-                const regexp = styleString.replace(new RegExp(":(.+?);|\\.|\\[|\\]|\\{|\\}|\\*|\\+", "g"), function(Keyword){
+                const regexp = styleString.replace(new RegExp(":(.+?);|\\.|\\[|\\]|\\{|\\}|\\*|\\+|\\||\\(|\\)|\\?|\\^|\\$|\\\\", "g"), function(Keyword){
                     switch (Keyword) {
                         case ".": return "\\.";
                         case "[": return "\\[";
@@ -455,6 +455,13 @@
                         case "}": return "\\}";
                         case "*": return "\\*";
                         case "+": return "\\+";
+                        case "|": return "\\|";
+                        case "(": return "\\(";
+                        case ")": return "\\)";
+                        case "?": return "\\?";
+                        case "^": return "\\^";
+                        case "$": return "\\$";
+                        case "\\": return "\\\\";
                         default: return ":(.+?);";
                     }
                 });
