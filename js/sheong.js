@@ -154,6 +154,7 @@
                 const VRElementElementParentNode = VRElementElement.parentNode;
                 const fragment = document.createDocumentFragment();
                 const forCookie = VRElementElement.getAttribute("she-for").replace(new RegExp("\\s+","g"), "").split(";");
+                const forCookie_0 = dev.parseHump(forCookie[0]);
                 const forCookie_1 = dev.parseHump(forCookie[1]);
                 const forCookie_2 = dev.parseHump(forCookie[2]);
   
@@ -178,7 +179,7 @@
                 const superiorNode = dev.getSuperiorNode(superiorElement);
 
                 const getData = function (VRElementElement, name) {
-                    if (VRElementElement.hasAttribute("she-for")) {
+                    if (VRElementElement.hasAttribute("she-for") && VRElementElement.getAttribute("she-for").indexOf(forCookie_0) !== -1) {
                         const index = VRElementElement.getAttribute( forCookie_2 );
                         if (name === forCookie_1) {
                             return forData[index];
@@ -210,6 +211,7 @@
                     while (i < VRElementNamesLength) {
                         const temporaryName = VRElementNames[i];
                         const command = VRElementCommands[i];
+                        
                         if (dev.parseHump(temporaryName).search( new RegExp(["^", forCookie_1, "$|^", forCookie_1, "[\\.\\[]|\\{(.+?):", forCookie_1, "(.*?)\\}"].join("")) ) !== -1) {
                             const item = getData(VRElementElement, forCookie_1);
                             if (!dev.isNull(item)) {
